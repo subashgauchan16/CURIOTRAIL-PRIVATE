@@ -1,6 +1,31 @@
 # Test report
 
-## Learning platform, Phase 1 (latest run)
+## Branding and licensing (latest run, not yet pushed)
+
+| Suite | Command | Result |
+|---|---|---|
+| Typecheck | `npm run typecheck` | ✅ no errors |
+| Unit tests | `npm test` | ✅ **105 / 105** in 7 files: the 99 earlier tests, all still passing, plus 6 new (`tests/brand.test.ts`) |
+| Production build | `npm run build` | ✅ no source maps; `THIRD-PARTY-NOTICES.txt` is in `dist/` |
+| Browser end-to-end | `npm run e2e` | ✅ **35 / 35**: the 34 earlier checks, unchanged and all passing, plus **W1** |
+
+**W1** runs on desktop (1366 × 820) and on a phone (390 × 844, touch), both with reduced motion, on the home, map, destination, quest and completion screens. On each screen it confirms:
+- exactly one SG · CurioTrail mark, as an SVG, with exactly one accessible label
+- the mark is visible, isn't an overlay, takes no pointer input and doesn't animate
+- it doesn't cover any visible link, button, field or other focusable element
+- the page doesn't scroll sideways
+
+It also confirms that the island credit is still in *About this prototype*, unchanged, next to the copyright line, and that the Progress screen's notice links to a third-party notices file the site actually serves.
+
+Quests, XP, unlocks, the v1 → v2 → v3 migrations, saves and the 2D fallback are covered by the earlier checks, which all still pass. Screenshots: `docs/screenshots/29-brand-home.jpg` and `29-mobile-brand-quest.jpg`.
+
+**Not tested:** with a real screen reader. The label was checked through the accessibility markup only.
+
+---
+
+## Learning platform, Phase 1
+
+
 
 | Suite | Command | Result |
 |---|---|---|
