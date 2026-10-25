@@ -247,3 +247,21 @@ input[type="text"]:focus-visible { border-color: var(--amber); }
 .status--available { color: var(--amber); }
 .status--revealed { color: var(--teal-bright); white-space: normal; }
 .status--locked { color: var(--mist-muted); }
+
+/* Creator mark: small, in-flow, never an overlay. */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  opacity: 0.72;
+  color: inherit;
+  pointer-events: none;
+  user-select: none;
+}
+.brand-mark-badge { flex: none; width: 1.6em; height: 1.6em; }
+.brand-mark--end { display: flex; justify-content: flex-end; margin-top: 0.75rem; }
+.copyright-notice { font-size: 0.8rem; opacity: 0.8; margin: 1rem 0 0; }
+@media (forced-colors: active) { .brand-mark { opacity: 1; } }

@@ -11,6 +11,7 @@ import { EvidenceCard, Speech, type SceneProps } from '../quest/common';
 import { AssembleView, ChoiceView, DialogueView, EndingView, EvidenceView, ExcelView, KpiView, PythonView, SqlView } from '../quest/Scenes';
 import { LessonCard } from '../quest/LessonCard';
 import { SchemaLabView } from '../quest/SchemaLab';
+import { BrandMark } from '../brand/BrandMark';
 
 /** Where a step sits in the learning cycle, shown as a badge. */
 export function phaseOf(scene: Scene): { id: string; label: string; icon: string } {
@@ -174,6 +175,7 @@ export function QuestScreen({ questId, onPose }: Props) {
             <span id="quest-progress-label">Step {step} of {total}</span>
             <progress max={total} value={step} aria-labelledby="quest-progress-label" />
           </div>
+          <BrandMark className="brand-mark--end" />
         </header>
         <div ref={stageRef}>
           <article key={scene.id} className={`scene scene--${scene.type} scene--phase-${phase.id} parchment`}>

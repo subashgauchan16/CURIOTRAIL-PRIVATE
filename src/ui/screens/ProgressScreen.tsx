@@ -10,6 +10,7 @@ import type { WorldRenderer } from '../../world/WorldRenderer';
 import type { StageStatus } from '../WorldStage';
 import { StatusChip } from './MapScreen';
 import { Stars } from '../Stars';
+import { CopyrightNotice } from '../brand/BrandMark';
 
 interface Props {
   webgl: boolean;
@@ -183,6 +184,7 @@ export function ProgressScreen({ webgl, autoQuality, stageStatus, renderer }: Pr
             </div>
           )}
         </div>
+        <CopyrightNotice />
       </div>
     </section>
   );
