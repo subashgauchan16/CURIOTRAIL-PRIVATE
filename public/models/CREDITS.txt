@@ -6,4 +6,4 @@ by cubical.xyz (https://sketchfab.com/cubical), licensed under CC-BY-4.0
 Changes: merged into chunks, baked to flat per-face colours (the original
 texture atlas is not included), water and seabed removed, simplified,
 quantized and meshopt-compressed. See tools/optimize-island.mjs.
-These two files are licensed CC-BY-4.0, not under the project's MIT licence.
+These two files are licensed CC-BY-4.0, not under the CurioTrail licence.
