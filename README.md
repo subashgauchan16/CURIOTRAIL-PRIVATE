@@ -2,7 +2,7 @@
 
 **Find your way through the digital world.**
 
-CurioTrail is a free, open-source, story-driven 3D learning game. You become a *Pathfinder* on a Viking island, and each destination on the island teaches a practical digital skill through short quests: checking AI-generated information, querying data with SQL, repairing Python, building spreadsheet formulas and reading business KPIs.
+CurioTrail is a free, story-driven 3D learning game by SG. You become a *Pathfinder* on a Viking island, and each destination on the island teaches a practical digital skill through short quests: checking AI-generated information, querying data with SQL, repairing Python, building spreadsheet formulas and reading business KPIs.
 
 > **Status:** playable prototype. Six quests are complete from start to finish, including a hands-on data-modelling lab, each with theory cards. They're organised into an eight-module learning path; modules with no content yet are clearly marked *planned*. No unfinished feature is presented as working.
 > "CurioTrail" is a working name. Trademarks and domains have not been checked.
@@ -77,11 +77,11 @@ Requires Node 22+.
 ```sh
 npm ci
 npm run dev          # http://localhost:5173 with hot reload
-npm test             # 99 unit tests (Vitest)
+npm test             # 105 unit tests (Vitest)
 npm run typecheck
 npm run build        # production build in dist/
 npm run preview      # serve the build
-npm run e2e          # 34 real-browser checks (needs Playwright + Chromium; see below)
+npm run e2e          # 35 real-browser checks (needs Playwright + Chromium; see below)
 ```
 
 `npm run e2e` serves `dist/` under `/CURIO/` (like GitHub Pages) and drives Chromium through every quest, the failure modes and the mobile layout. It writes screenshots to `docs/screenshots/` and results to `docs/test-results/e2e.json`. Install Chromium once with `npx playwright install chromium`.
@@ -104,7 +104,7 @@ GitHub Pages builds from `main` using `.github/workflows/deploy-pages.yml`: `npm
 
 - **3D island:** based on ["Viking Island - Minecraft"](https://sketchfab.com/3d-models/viking-island-minecraft-fd76e3824b7647d98be20d3e2160e018) by [cubical.xyz](https://sketchfab.com/cubical), licensed under [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/). It was optimised for the web: 376 MB and 4.5M triangles became 0.6 MB (light) and 4.4 MB (detailed). The two model files remain CC-BY-4.0. See [docs/ASSETS.md](docs/ASSETS.md) and `public/models/CREDITS.txt`.
 - Everything else is original to this project: code, quest content, characters, sky, water, clouds and markers.
-- **Libraries:** React, Three.js, sql.js (SQLite) and Vite, all MIT or a compatible licence.
+- **Libraries:** React, Three.js and sql.js (SQLite) ship in the game under their own MIT or public-domain terms; Vite and the other build tools are not shipped. Versions, copyright lines and full licence texts are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) (regenerate with `npm run notices`).
 
 ## Privacy
 
@@ -120,7 +120,15 @@ See [docs/TEST-REPORT.md](docs/TEST-REPORT.md#incomplete-or-limited) for the ful
 
 ## Licence
 
-The code and quest content are MIT (see [LICENSE](LICENSE)). The island model files are CC-BY-4.0, as above.
+© 2026 SG · CurioTrail. CurioTrail is **not open source**. A proposed proprietary licence is in [LICENSE](LICENSE); it is a **draft awaiting legal review**.
+
+- **Learners:** playing the official game is free for personal learning, with no account and no ads.
+- **Source code:** visible here for review and transparency. Copying, redistributing, hosting a copy or modifying it needs written permission.
+- **Organisations:** training use, hosting, embedding, integration, white-labelling and resale need a commercial licence. See [docs/COMMERCIAL-LICENSING.md](docs/COMMERCIAL-LICENSING.md).
+- **Earlier versions:** commits published before the new licence were MIT-licensed, and those versions stay MIT. See [docs/IP-OWNERSHIP.md](docs/IP-OWNERSHIP.md).
+- **Third-party material** keeps its own licence, including the CC-BY-4.0 island models. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
+Security issues: see [SECURITY.md](SECURITY.md).
 
 ## Feedback
 

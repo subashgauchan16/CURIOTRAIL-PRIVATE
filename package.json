@@ -4,7 +4,7 @@
   "private": true,
   "description": "A story-driven, gamified digital-literacy prototype.",
   "type": "module",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "test": "vitest run",
     "dev": "vite",
@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "e2e": "node e2e/run-e2e.cjs",
-    "optimize-island": "node --max-old-space-size=12000 tools/optimize-island.mjs"
+    "optimize-island": "node --max-old-space-size=12000 tools/optimize-island.mjs",
+    "notices": "node tools/build-notices.mjs"
   },
   "engines": {
     "node": ">=22"
