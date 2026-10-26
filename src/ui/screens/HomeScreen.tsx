@@ -2,6 +2,7 @@ import { useGame } from '../../app/game';
 import { destinationForQuest, questStatus } from '../../engine/progression';
 import { restoreRun } from '../../engine/game-engine';
 import { questRecord } from '../../engine/progress-store';
+import { BrandMark, CopyrightNotice } from '../brand/BrandMark';
 
 export function HomeScreen({ feedbackUrl }: { feedbackUrl: string }) {
   const { progress, quests, world, storageAvailable } = useGame();
@@ -26,7 +27,7 @@ export function HomeScreen({ feedbackUrl }: { feedbackUrl: string }) {
   return (
     <section className="home panel-left" aria-labelledby="hero-title">
       <div className="hero-card">
-        <p className="eyebrow">A free, open-source learning adventure</p>
+        <p className="eyebrow">A free learning adventure</p>
         <h1 id="hero-title" className="hero-title">Find your way through the digital world.</h1>
         <p className="lede">
           CurioTrail is a story-driven game where you become a Pathfinder on a Viking island, solving everyday problems with digital skills: checking AI answers, querying data, fixing code and building spreadsheets.
@@ -47,6 +48,7 @@ export function HomeScreen({ feedbackUrl }: { feedbackUrl: string }) {
           <li><span aria-hidden="true">💡</span> Mistakes unlock hints, never penalties</li>
         </ul>
         {status === 'in-progress' && !resume && <p className="hint">You have a quest in progress.</p>}
+        <BrandMark className="brand-mark--end" />
       </div>
 
       <details className="about card-quiet">
@@ -58,6 +60,7 @@ export function HomeScreen({ feedbackUrl }: { feedbackUrl: string }) {
           <li>The island is “Viking Island – Minecraft” by cubical.xyz (CC-BY-4.0), optimised for the web. See the README for full credits.</li>
         </ul>
         <p><a href={feedbackUrl} target="_blank" rel="noopener">Share feedback on GitHub<span className="sr-only"> (opens in a new tab)</span></a></p>
+        <CopyrightNotice />
       </details>
     </section>
   );

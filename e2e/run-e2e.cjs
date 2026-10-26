@@ -842,6 +842,91 @@ const tests = [];
     await c.close();
   });
 
+  // ---- Branding ----
+  await run('W1', 'SG · CurioTrail mark: on home, map, quest and completion; labelled once; never blocks controls; copyright and notices', async () => {
+    const ids = ['missing-signal', 'the-ledger', 'broken-tally', 'market-ledger', 'great-hall-dashboard', 'star-chart'];
+    const routes = ['#/', '#/map', '#/map/signal-woods', '#/quest/missing-signal', '#/complete/missing-signal'];
+    for (const [label, opts, graphics] of [
+      ['desktop', { viewport: { width: 1366, height: 820 }, reducedMotion: 'reduce' }, 'auto'],
+      ['mobile', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: 'reduce' }, 'off'],
+    ]) {
+      const c = await browser.newContext(opts);
+      const p = await c.newPage();
+      watch(p, `brand-${label}`);
+      await p.goto(URL_BASE);
+      await seedProgress(p, ids, { graphics });
+      for (const r of routes) {
+        await p.goto(`${URL_BASE}${r}`);
+        await p.waitForSelector('main h1');
+        await p.waitForTimeout(400);
+        const info = await p.evaluate(() => {
+          const marks = [...document.querySelectorAll('main .brand-mark')];
+          const m = marks[0];
+          if (!m) return { count: 0 };
+          m.scrollIntoView({ block: 'center' });
+          const rect = m.getBoundingClientRect();
+          const cs = getComputedStyle(m);
+          // Interactive elements other than the mark itself and the containers around it.
+          // The 3D canvas sits behind every panel; the mark takes no pointer input, so it can't block it.
+          const overlaps = [...document.querySelectorAll('a, button, input, select, textarea, summary, [tabindex]')]
+            .filter((el) => !m.contains(el) && !el.contains(m) && el.offsetParent !== null)
+            .filter((el) => { const b = el.getBoundingClientRect(); return b.left < rect.right && b.right > rect.left && b.top < rect.bottom && b.bottom > rect.top; })
+            // Only count elements a player can actually see there: something already
+            // hidden behind the mark's panel (e.g. a map label under the card) isn't covered by the mark.
+            .filter((el) => {
+              const b = el.getBoundingClientRect();
+              const x = (Math.max(b.left, rect.left) + Math.min(b.right, rect.right)) / 2;
+              const y = (Math.max(b.top, rect.top) + Math.min(b.bottom, rect.bottom)) / 2;
+              const top = document.elementFromPoint(x, y);
+              return !!top && el.contains(top);
+            })
+            .map((el) => el.tagName + ':' + (el.textContent || '').trim().slice(0, 20));
+          const svg = m.querySelector('svg');
+          return {
+            count: marks.length,
+            labelled: document.querySelectorAll('main [aria-label="SG · CurioTrail"]').length,
+            text: m.textContent.replace(/\s+/g, ' ').trim(),
+            visible: rect.width > 0 && rect.height > 0 && cs.visibility !== 'hidden' && Number(cs.opacity) > 0.3,
+            pointer: cs.pointerEvents,
+            position: cs.position,
+            // The global reduced-motion rule sets 0.001ms; anything longer would be visible motion.
+            animated: cs.animationName !== 'none' || cs.transitionDuration.split(',').some((d) => parseFloat(d) > 0.01),
+            vector: !!svg && svg.getAttribute('viewBox') === '0 0 24 24',
+            overlaps,
+            overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+          };
+        });
+        const where = `${label} ${r}`;
+        expect(info.count === 1, `${where}: expected one mark, found ${info.count}`);
+        expect(info.labelled === 1, `${where}: expected one labelled mark, found ${info.labelled}`);
+        expect(info.text.includes('SG · CurioTrail'), `${where}: mark text was "${info.text}"`);
+        expect(info.visible, `${where}: mark not visible`);
+        expect(info.vector, `${where}: mark is not an SVG`);
+        expect(info.pointer === 'none', `${where}: mark should not take pointer input, got ${info.pointer}`);
+        expect(!['fixed', 'absolute'].includes(info.position), `${where}: mark is an overlay (${info.position})`);
+        expect(!info.animated, `${where}: mark animates`);
+        expect(info.overlaps.length === 0, `${where}: mark overlaps ${info.overlaps.join(', ')}`);
+        expect(!info.overflow, `${where}: horizontal overflow`);
+        if (label === 'mobile' && r === '#/quest/missing-signal') await shot(p, '29-mobile-brand-quest');
+        if (label === 'desktop' && r === '#/') await shot(p, '29-brand-home');
+      }
+      // The island credit is still on the home screen, unchanged and not covered.
+      await p.goto(URL_BASE);
+      await p.locator('details.about summary').click();
+      const about = await p.locator('details.about').innerText();
+      expect(about.includes('“Viking Island – Minecraft” by cubical.xyz (CC-BY-4.0)'), 'island credit missing from About');
+      expect(/© 2026 SG · CurioTrail/.test(about), 'copyright missing from About');
+      await p.goto(`${URL_BASE}#/progress`);
+      await p.waitForSelector('main h1');
+      const notice = p.locator('.copyright-notice');
+      expect((await notice.count()) === 1, 'copyright missing from Progress');
+      const href = await notice.locator('a').getAttribute('href');
+      const res = await p.request.get(new URL(href, `${URL_BASE}`).toString());
+      expect(res.ok() && (await res.text()).includes('CC-BY-4.0'), `third-party notices not served at ${href}`);
+      await c.close();
+    }
+  });
+
   await run('A1b', 'No console errors during the whole run', async () => {
     expect(consoleErrors.length === 0, consoleErrors.join(' | '));
   });

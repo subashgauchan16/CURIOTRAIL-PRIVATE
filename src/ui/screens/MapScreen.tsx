@@ -9,6 +9,7 @@ import { totalXp, totalStars } from '../../engine/progress-store';
 import type { WorldRenderer } from '../../world/WorldRenderer';
 import type { StageStatus } from '../WorldStage';
 import { Stars } from '../Stars';
+import { BrandMark } from '../brand/BrandMark';
 
 export const STATUS_LABEL: Record<DestinationStatus | QuestStatus, { icon: string; text: string }> = {
   available: { icon: '●', text: 'Available' },
@@ -73,6 +74,7 @@ export function MapScreen({ selected, renderer, stageStatus, webgl }: Props) {
           <p className="eyebrow">The Unmapped World</p>
           <h1 id="map-title">The Viking Island</h1>
           <p className="map-summary">Level {level.level} · {level.name} · {xp} XP · <span aria-hidden="true">★</span> {totalStars(progress)} stars</p>
+          <BrandMark />
         </header>
 
         {destination ? (

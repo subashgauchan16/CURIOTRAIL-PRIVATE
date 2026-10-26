@@ -1,21 +1,106 @@
-MIT License
+=====================================================================
+  DRAFT: PROPOSED LICENCE, NOT YET LEGALLY REVIEWED
+  This text is a proposal written without legal advice. It has not
+  been reviewed by a lawyer and should not be relied on as enforceable
+  until it has. Items in [SQUARE BRACKETS] are placeholders to be
+  completed after review.
+=====================================================================
 
-Copyright (c) 2026 CurioTrail contributors
+CurioTrail Licence (proposed), version 0.1 draft
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Copyright (c) 2026 SG [LICENSOR'S FULL LEGAL NAME OR ENTITY: TO BE
+CONFIRMED]. All rights reserved, except as stated below.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+"CurioTrail" means the CurioTrail software, quest and lesson content,
+interface designs, characters and documentation in this repository and
+in the published game, EXCLUDING the Third-Party Material described in
+section 6.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. Free use by individual learners
+
+   Any individual may use the published CurioTrail game free of charge
+   for their own personal, non-commercial learning, including at home,
+   at school, at university or while studying for work.
+
+2. What needs a commercial licence
+
+   An organisation (including a company, school, training provider,
+   charity or public body) needs a separate written commercial licence
+   from the Licensor before it:
+
+   a) provides CurioTrail to its staff, students, customers or members
+      as part of a course, training programme, product or service;
+   b) hosts, embeds or integrates CurioTrail, or any part of it, in its
+      own website, platform, learning management system or product;
+   c) white-labels, rebrands or resells CurioTrail; or
+   d) uses CurioTrail's content or code to create derivative courses,
+      products or services.
+
+   An individual teacher or trainer pointing learners to the public
+   game at its official address is not covered by section 2 and needs
+   no licence. [LEGAL REVIEW: confirm whether this exception is wanted
+   and how it should be worded.]
+
+3. Source code
+
+   The source code is made visible for review and transparency. Except
+   where a written licence from the Licensor allows it, no one may:
+
+   a) copy, modify, publish, distribute, sublicense or sell the source
+      code or the game, in whole or in part;
+   b) host a copy of the game or a derivative of it; or
+   c) remove or alter the SG · CurioTrail mark, copyright notices or
+      third-party notices.
+
+   Personal study of the source code, and contributions submitted back
+   to the official repository, are permitted.
+
+4. Names and marks
+
+   This licence grants no right to use the name "CurioTrail" or the
+   "SG" mark, except to refer accurately to the original game.
+   [LEGAL REVIEW: no trademark has been registered or cleared; see
+   docs/IP-OWNERSHIP.md.]
+
+5. Earlier versions
+
+   Versions of CurioTrail published before this licence took effect
+   were released under the MIT licence. Anyone who received those
+   versions keeps the rights the MIT licence gave them, for those
+   versions only. This licence applies to versions published after it
+   took effect. [LEGAL REVIEW: confirm the effective date and the first
+   commit covered: TO BE SET WHEN PUBLISHED.]
+
+6. Third-party material
+
+   CurioTrail includes third-party software and assets that remain
+   under their own licences, listed in THIRD-PARTY-NOTICES.md. That
+   includes the island model files (models/island-high.glb and
+   models/island-low.glb), which are a derivative of "Viking Island -
+   Minecraft" by cubical.xyz and remain licensed under CC-BY-4.0. This
+   licence does not apply to Third-Party Material, and nothing in it
+   restricts any right that the Third-Party Material's own licence gives.
+
+7. No warranty
+
+   CurioTrail is provided "as is", without warranty of any kind,
+   express or implied, including warranties of merchantability, fitness
+   for a particular purpose and non-infringement. To the extent the law
+   allows, the Licensor is not liable for any claim, damage or other
+   liability arising from CurioTrail or its use.
+   [LEGAL REVIEW: confirm wording for the relevant jurisdiction and for
+   consumer-protection law.]
+
+8. Termination
+
+   Rights under this licence end automatically if its terms are broken.
+   [LEGAL REVIEW: consider a cure period.]
+
+9. Governing law
+
+   [GOVERNING LAW AND JURISDICTION: TO BE CONFIRMED]
+
+10. Commercial licences and questions
+
+   See docs/COMMERCIAL-LICENSING.md. Contact: [CONTACT METHOD: TO BE
+   CONFIRMED].

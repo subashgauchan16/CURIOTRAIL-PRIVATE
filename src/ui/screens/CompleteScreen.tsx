@@ -4,6 +4,7 @@ import { levelFor, restoreRun, skillReport, type SkillStatus } from '../../engin
 import { questRecord, totalXp, withReplay } from '../../engine/progress-store';
 import { destinationForQuest, nextQuestAt } from '../../engine/progression';
 import { Stars } from '../Stars';
+import { BrandMark } from '../brand/BrandMark';
 
 const SKILL_ICON: Record<SkillStatus, string> = { demonstrated: '✓', 'with-hints': '✓', reviewed: '💡', 'not-yet': '○' };
 
@@ -102,6 +103,7 @@ export function CompleteScreen({ questId, feedbackUrl }: { questId: string; feed
           <p>Was anything confusing? Would you try another quest? Your feedback decides what gets built next.</p>
           <a href={feedbackUrl} target="_blank" rel="noopener">Share feedback on GitHub<span className="sr-only"> (opens in a new tab)</span></a>
         </div>
+        <BrandMark className="brand-mark--end" />
       </div>
     </section>
   );
