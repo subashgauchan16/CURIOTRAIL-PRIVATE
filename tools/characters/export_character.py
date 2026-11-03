@@ -22,7 +22,7 @@ out = os.path.join(BUILD, f"{name}.glb")
 bpy.ops.export_scene.gltf(filepath=out, export_format='GLB', use_selection=True, export_yup=True,
                           export_animations=True, export_animation_mode='ACTIONS', export_skins=True,
                           export_def_bones=False, export_image_format='WEBP', export_image_quality=82,
-                          export_extras=True, export_copyright="CURIOtrail Pathfinder prototype. Base, outfit and animation from Quaternius packs (CC0 1.0).")
+                          export_extras=True, export_copyright=f"CURIOtrail {name} prototype. Base, outfit and animation from Quaternius packs (CC0 1.0).")
 import json, struct
 with open(out, "rb") as f:
     data = f.read()

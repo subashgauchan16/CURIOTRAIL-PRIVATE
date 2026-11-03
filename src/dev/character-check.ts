@@ -16,6 +16,12 @@ const status = document.getElementById('status') as HTMLElement;
 const fromBlender = (x: number, y: number, z = 0) => new THREE.Vector3(x, z, -y);
 const SPAWN = fromBlender(0, -16, 0);              // open ground south of the village plaza (zone B)
 const MIRA_SPOT = fromBlender(-27.5, -6.0, 0);      // nav.json cast: where Mira stands, outside her house
+// NPCs at their nav.json cast positions; Blender's rotation about Z maps directly to rotation.y.
+const NPCS = [
+  { name: 'Mira', file: 'Mira.glb', at: MIRA_SPOT, rot: 90 },
+  { name: 'Tove', file: 'Tove.glb', at: fromBlender(14, -36.3, 0), rot: 180 },
+];
+const npcs = new Map<string, CharacterModel>();
 
 const timings: Record<string, number> = {};
 const t0 = performance.now();
@@ -99,6 +105,15 @@ async function main() {
   pathfinder.root.position.copy(openGround(SPAWN));
   pathfinder.root.rotation.y = heading;
   view('close');
+  for (const npc of NPCS) {
+    const t = performance.now();
+    const model = await loadCharacterModel(`${ASSETS}${npc.file}`);
+    timings[npc.name] = performance.now() - t;
+    world.addActor(model);
+    model.root.position.copy(openGround(npc.at));
+    model.root.rotation.y = THREE.MathUtils.degToRad(npc.rot);
+    npcs.set(npc.name, model);
+  }
 
   const clock = new THREE.Timer();
   clock.connect(document);
@@ -129,11 +144,34 @@ async function main() {
     if (b.dataset.gesture) pathfinder.gesture(b.dataset.gesture);
     if (b.dataset.view === 'house') {
       speed = 0; patrol = false; pathfinder.setSpeed(0);
-      pathfinder.root.position.copy(openGround(MIRA_SPOT));
+      // beside Mira's door, two metres along the wall from where Mira stands
+      pathfinder.root.position.copy(openGround(MIRA_SPOT.clone().add(new THREE.Vector3(0, 0, 2.2)), 3));
       heading = 0; pathfinder.root.rotation.y = 0;
     }
     if (b.dataset.view) view(b.dataset.view);
   });
+
+  /** Camera on one NPC at its home position. */
+  const look = (who: string) => {
+    const m = npcs.get(who);
+    if (!m) return;
+    const p = m.root.position;
+    const f = new THREE.Vector3(Math.sin(m.root.rotation.y), 0, Math.cos(m.root.rotation.y));
+    const cam = p.clone().addScaledVector(f, 3.2).add(new THREE.Vector3(1.2, 1.4, 0));
+    world.setMode({ kind: 'inspect', position: cam.toArray() as [number, number, number], target: [p.x, p.y + 1.0, p.z] });
+  };
+  /** All three side by side on open ground, for a height and style comparison. */
+  const lineup = () => {
+    if (!pathfinder) return;
+    speed = 0; patrol = false; follow = false; pathfinder.setSpeed(0);
+    const base = openGround(SPAWN);
+    pathfinder.root.position.copy(base); heading = 0; pathfinder.root.rotation.y = 0;
+    [...npcs.values()].forEach((m, i) => {
+      const p = base.clone().add(new THREE.Vector3(i === 0 ? -1.1 : 1.1, 0, 0));
+      ground(p); m.root.position.copy(p); m.root.rotation.y = 0;
+    });
+    world.setMode({ kind: 'inspect', position: [base.x + 0.4, base.y + 1.3, base.z + 5.2], target: [base.x, base.y + 0.95, base.z] });
+  };
 
   const gl = world.renderer.getContext();
   const debug = gl.getExtension('WEBGL_debug_renderer_info');
@@ -141,18 +179,24 @@ async function main() {
     ready: true,
     timings,
     gpu: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : 'unknown',
-    stats: () => ({ world: world.stats(), character: pathfinder?.stats(), height: pathfinder?.height, position: pathfinder?.root.position.toArray() }),
+    stats: () => ({ world: world.stats(), character: pathfinder?.stats(), height: pathfinder?.height, position: pathfinder?.root.position.toArray(),
+      npcs: Object.fromEntries([...npcs].map(([n, m]) => [n, { ...m.stats(), height: m.height, position: m.root.position.toArray() }])) }),
+    look,
+    lineup,
+    npcGesture: (who: string, n: string) => npcs.get(who)?.gesture(n),
     setSpeed: (v: number) => { patrol = false; follow = v > 0; speed = v; pathfinder?.setSpeed(v); },
     patrol: () => { patrol = true; follow = true; speed = 1.4; pathfinder?.setSpeed(1.4); },
     follow: (on: boolean) => { follow = on; },
     gesture: (n: string) => pathfinder?.gesture(n),
     view,
     house: () => (document.querySelector('[data-view="house"]') as HTMLButtonElement).click(),
-    /** Removes the character and reports GPU resources before/after, against the island-only baseline. */
+    /** Removes every character and reports GPU resources before/after, against the island-only baseline. */
     disposeCharacter: () => {
       const before = { ...world.renderer.info.memory };
       if (pathfinder) world.removeActor(pathfinder);
       pathfinder = null;
+      for (const m of npcs.values()) world.removeActor(m);
+      npcs.clear();
       world.renderer.render(new THREE.Scene(), new THREE.PerspectiveCamera());
       return { baseline: { ...baseline }, withCharacter: before, after: { ...world.renderer.info.memory } };
     },
