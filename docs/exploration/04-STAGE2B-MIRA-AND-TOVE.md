@@ -54,7 +54,15 @@ Command: `node e2e/character-check.cjs --gpu`, with the dev server on port 5199.
 
 ## 5. Full browser regression suite
 
-The result is reported in the stage message, and the log is `stage2/e2e-regression-2b.log`.
+**34 / 35 passed** (`stage2/e2e-regression-2b.log`). The failure is **A13b** (keyboard-only quest), which now has this history across runs:
+
+| Run | A13b | Failure point |
+|---|---|---|
+| Before any change | Fail | `page.waitForURL` timeout |
+| After Stage 2 | Pass | — |
+| After Stage 2b | Fail | `locator.focus` timeout |
+
+Stage 2b changed **no application code**: only the dev check page, the evidence script and the Blender tools, none of which ship in the production bundle. The failure point also differs between runs. That points to a **pre-existing intermittent timing problem** in the A13b check, or in focus handling under software rendering. It is not caused by this work. It should be investigated as its own task before Stage 3 adds keyboard controls.
 
 ## 6. Next (needs your OK)
 
