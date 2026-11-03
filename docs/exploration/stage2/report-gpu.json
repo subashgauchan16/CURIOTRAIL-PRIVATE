@@ -1,0 +1,259 @@
+{
+ "url": "http://localhost:5199/dev/character-check.html?quality=high",
+ "gpuRequested": true,
+ "gpu": "ANGLE (Intel, Intel(R) Arc(TM) 130V GPU (8GB) (0x000064A0) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "timings": {
+  "island": 1625.5,
+  "character": 404.40000000596046
+ },
+ "idle": {
+  "world": {
+   "fps": 61,
+   "drawCalls": 104,
+   "triangles": 110916,
+   "geometries": 227,
+   "textures": 10,
+   "lod": "low",
+   "pixelRatio": 1,
+   "markers": [],
+   "camera": [
+    2,
+    4,
+    13
+   ],
+   "character": null,
+   "mode": "inspect"
+  },
+  "character": {
+   "triangles": 22864,
+   "textures": 7,
+   "bones": 65,
+   "clips": [
+    "Idle",
+    "Interact",
+    "PickUp",
+    "Run",
+    "Talk",
+    "Walk"
+   ],
+   "state": "Idle"
+  },
+  "height": 1.7399996824860953,
+  "position": [
+   0,
+   2,
+   16
+  ]
+ },
+ "walking": {
+  "world": {
+   "fps": 60,
+   "drawCalls": 137,
+   "triangles": 113196,
+   "geometries": 227,
+   "textures": 10,
+   "lod": "low",
+   "pixelRatio": 1,
+   "markers": [],
+   "camera": [
+    6,
+    6,
+    7
+   ],
+   "character": null,
+   "mode": "inspect"
+  },
+  "character": {
+   "triangles": 22864,
+   "textures": 7,
+   "bones": 65,
+   "clips": [
+    "Idle",
+    "Interact",
+    "PickUp",
+    "Run",
+    "Talk",
+    "Walk"
+   ],
+   "state": "Walk"
+  },
+  "height": 1.7399996824860953,
+  "position": [
+   4.508292261701151e-16,
+   2,
+   12.318699999999998
+  ]
+ },
+ "walkingLater": {
+  "world": {
+   "fps": 60,
+   "drawCalls": 137,
+   "triangles": 113196,
+   "geometries": 227,
+   "textures": 10,
+   "lod": "low",
+   "pixelRatio": 1,
+   "markers": [],
+   "camera": [
+    6,
+    6,
+    7
+   ],
+   "character": null,
+   "mode": "inspect"
+  },
+  "character": {
+   "triangles": 22864,
+   "textures": 7,
+   "bones": 65,
+   "clips": [
+    "Idle",
+    "Interact",
+    "PickUp",
+    "Run",
+    "Talk",
+    "Walk"
+   ],
+   "state": "Walk"
+  },
+  "height": 1.7399996824860953,
+  "position": [
+   6.523864949625159e-16,
+   2,
+   9.346639999991655
+  ]
+ },
+ "running": {
+  "world": {
+   "fps": 60,
+   "drawCalls": 137,
+   "triangles": 113196,
+   "geometries": 227,
+   "textures": 10,
+   "lod": "low",
+   "pixelRatio": 1,
+   "markers": [],
+   "camera": [
+    6,
+    6,
+    7
+   ],
+   "character": null,
+   "mode": "inspect"
+  },
+  "character": {
+   "triangles": 22864,
+   "textures": 7,
+   "bones": 65,
+   "clips": [
+    "Idle",
+    "Interact",
+    "PickUp",
+    "Run",
+    "Talk",
+    "Walk"
+   ],
+   "state": "Run"
+  },
+  "height": 1.7399996824860953,
+  "position": [
+   -5.087844112966874e-16,
+   2,
+   14.08748000001311
+  ]
+ },
+ "backToIdle": {
+  "world": {
+   "fps": 60,
+   "drawCalls": 144,
+   "triangles": 116320,
+   "geometries": 227,
+   "textures": 10,
+   "lod": "low",
+   "pixelRatio": 1,
+   "markers": [],
+   "camera": [
+    3,
+    4,
+    14
+   ],
+   "character": null,
+   "mode": "inspect"
+  },
+  "character": {
+   "triangles": 22864,
+   "textures": 7,
+   "bones": 65,
+   "clips": [
+    "Idle",
+    "Interact",
+    "PickUp",
+    "Run",
+    "Talk",
+    "Walk"
+   ],
+   "state": "Idle"
+  },
+  "height": 1.7399996824860953,
+  "position": [
+   -5.235977389765459e-16,
+   2,
+   14.147960000002382
+  ]
+ },
+ "atHouse": {
+  "world": {
+   "fps": 45,
+   "drawCalls": 241,
+   "triangles": 119296,
+   "geometries": 227,
+   "textures": 10,
+   "lod": "low",
+   "pixelRatio": 1,
+   "markers": [],
+   "camera": [
+    -21,
+    6,
+    12
+   ],
+   "character": null,
+   "mode": "inspect"
+  },
+  "character": {
+   "triangles": 22864,
+   "textures": 7,
+   "bones": 65,
+   "clips": [
+    "Idle",
+    "Interact",
+    "PickUp",
+    "Run",
+    "Talk",
+    "Walk"
+   ],
+   "state": "Idle"
+  },
+  "height": 1.7399996824860953,
+  "position": [
+   -27,
+   2.5,
+   6
+  ]
+ },
+ "disposal": {
+  "baseline": {
+   "geometries": 215,
+   "textures": 2
+  },
+  "withCharacter": {
+   "geometries": 227,
+   "textures": 10
+  },
+  "after": {
+   "geometries": 215,
+   "textures": 2
+  }
+ },
+ "consoleErrors": [],
+ "walkMoved": 2.9720600000083426
+}

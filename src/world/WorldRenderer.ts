@@ -6,8 +6,10 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { PALETTE, createClouds, createSky, createSparkles, createWater, setWaterAnimated, updateClouds, type Water } from './environment';
 import { createCharacter, type Character, type Pose } from './characters';
+import type { CharacterModel } from './character-model';
 
 import type { Quality } from './capabilities';
 
@@ -25,7 +27,9 @@ export type CameraMode =
   | { kind: 'overview'; panel?: 'left' | 'right' | 'bottom' }
   | { kind: 'map'; selected?: string | null; panel?: 'left' | 'right' | 'bottom' }
   | { kind: 'focus'; destination: string; character?: string; pose?: Pose; panel?: 'right' | 'bottom' }
-  | { kind: 'celebrate'; destination: string; character?: string };
+  | { kind: 'celebrate'; destination: string; character?: string }
+  // A fixed camera, used by development checks of rigged characters.
+  | { kind: 'inspect'; position: [number, number, number]; target: [number, number, number] };
 
 export interface LoadState {
   phase: 'loading' | 'refining' | 'ready' | 'error';
@@ -38,6 +42,8 @@ export interface WorldOptions {
   quality: Quality;
   reducedMotion: boolean;
   modelBase: string; // e.g. "./models/"
+  /** Island files under modelBase; defaults to island-low.glb then island-high.glb. */
+  islandFiles?: { low: string; high?: string };
   onSelect?: (id: string) => void;
   onHover?: (id: string | null) => void;
   onLoad?: (state: LoadState) => void;
@@ -96,6 +102,8 @@ export class WorldRenderer {
   private lod: LoadState['lod'] = 'none';
   private fps = { frames: 0, last: 0, value: 0 };
   private viewOffset: 'left' | 'right' | 'bottom' | null = null;
+  private actors = new Set<CharacterModel>();
+  private environment: THREE.Texture;
 
   constructor(private canvas: HTMLCanvasElement, options: WorldOptions) {
     this.options = options;
@@ -113,6 +121,13 @@ export class WorldRenderer {
     const sun = new THREE.DirectionalLight('#fff4dc', 2.1);
     sun.position.set(-260, 420, 200);
     this.scene.add(sun);
+    // Image-based light for PBR characters (leather, cloth, skin). The island's
+    // Lambert material ignores scene.environment, so its look is unchanged.
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+    this.scene.environment = this.environment;
+    this.scene.environmentIntensity = 0.55;
 
     this.water = createWater(!options.reducedMotion);
     this.scene.add(this.water.mesh);
@@ -173,21 +188,22 @@ export class WorldRenderer {
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
     const base = this.options.modelBase;
+    const files = this.options.islandFiles ?? { low: 'island-low.glb', high: 'island-high.glb' };
     const report = (state: LoadState) => { if (!this.disposed) this.options.onLoad?.(state); };
     try {
       report({ phase: 'loading', progress: 0, lod: 'none' });
-      const low = await loader.loadAsync(`${base}island-low.glb`, (e) => {
+      const low = await loader.loadAsync(`${base}${files.low}`, (e) => {
         if (e.total) report({ phase: 'loading', progress: e.loaded / e.total, lod: 'none' });
       });
       if (this.disposed) return;
       this.setIsland(low.scene, 'low');
-      if (this.options.quality !== 'high') {
+      if (this.options.quality !== 'high' || !files.high) {
         report({ phase: 'ready', progress: 1, lod: 'low' });
         return;
       }
       report({ phase: 'refining', progress: 0, lod: 'low' });
       try {
-        const high = await loader.loadAsync(`${base}island-high.glb`, (e) => {
+        const high = await loader.loadAsync(`${base}${files.high}`, (e) => {
           if (e.total) report({ phase: 'refining', progress: e.loaded / e.total, lod: 'low' });
         });
         if (this.disposed) return;
@@ -344,9 +360,14 @@ export class WorldRenderer {
     this.controls.enabled = mode.kind === 'map';
     this.controls.autoRotate = mode.kind === 'overview' && !this.options.reducedMotion;
     this.controls.autoRotateSpeed = 0.35;
-    this.viewOffset = mode.kind === 'celebrate' ? null : mode.panel ?? null;
+    this.viewOffset = mode.kind === 'celebrate' || mode.kind === 'inspect' ? null : mode.panel ?? null;
     this.resize();
-    if (mode.kind === 'overview') {
+    // Map-scale zoom limits would push a close character camera 60 units away.
+    this.controls.minDistance = mode.kind === 'inspect' ? 0.5 : 60;
+    if (mode.kind === 'inspect') {
+      pos = new THREE.Vector3(...mode.position);
+      target = new THREE.Vector3(...mode.target);
+    } else if (mode.kind === 'overview') {
       target = new THREE.Vector3(0, 25, 0);
       const dir = this.camera.position.clone().sub(this.controls.target).setY(0).normalize();
       if (!Number.isFinite(dir.x) || dir.lengthSq() < 0.5) dir.set(-0.6, 0, 0.8);
@@ -452,6 +473,18 @@ export class WorldRenderer {
 
   resetView() {
     if (this.mode.kind === 'map') this.setMode({ kind: 'map', selected: null });
+  }
+
+  // ---- Rigged characters ----
+
+  /** Adds a loaded character to the scene; it is animated every frame and disposed with the world. */
+  addActor(actor: CharacterModel) {
+    this.actors.add(actor);
+    this.scene.add(actor.root);
+  }
+
+  removeActor(actor: CharacterModel) {
+    if (this.actors.delete(actor)) actor.dispose();
   }
 
   // ---- Effects ----
@@ -584,6 +617,7 @@ export class WorldRenderer {
       marker.ring.scale.setScalar(s * (active && !still ? 1 + Math.sin(time * 3) * 0.06 : 1));
     }
     if (this.character) this.character.update(time, delta, still);
+    for (const actor of this.actors) actor.update(delta);
     if (this.burst) {
       const age = time - this.burst.start;
       const attr = this.burst.points.geometry.getAttribute('position') as THREE.BufferAttribute;
@@ -671,6 +705,9 @@ export class WorldRenderer {
     this.controls.dispose();
     this.disposeBurst();
     this.character?.dispose();
+    for (const actor of this.actors) actor.dispose();
+    this.actors.clear();
+    this.environment.dispose();
     this.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (mesh.geometry) mesh.geometry.dispose();

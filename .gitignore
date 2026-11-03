@@ -6,3 +6,7 @@ Thumbs.db
 *.log
 .env
 .env.*
+
+# Large development-only models (island B, character prototypes); see docs/exploration/
+dev-assets/
+tools/build/

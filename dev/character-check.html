@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Character check (development only)</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b1626; color: #f3ead8; font: 14px/1.4 system-ui, sans-serif; }
+    canvas { display: block; width: 100%; height: 100%; }
+    #panel { position: fixed; top: 12px; left: 12px; background: rgba(11, 28, 38, 0.88); border: 1px solid #2c4a52; border-radius: 8px; padding: 10px 12px; max-width: 360px; }
+    #panel button { background: #183238; color: #f3ead8; border: 1px solid #3c6068; border-radius: 6px; padding: 4px 9px; margin: 2px; cursor: pointer; }
+    #panel pre { margin: 6px 0 0; font-size: 12px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <canvas id="stage" aria-label="Development check of the Pathfinder character on the island"></canvas>
+  <div id="panel">
+    <strong>Pathfinder check</strong> · development only
+    <div>
+      <button data-speed="0">Idle</button><button data-speed="1.4">Walk</button><button data-speed="3.6">Run</button>
+      <button data-patrol="1">Walk loop</button><button data-gesture="Talk">Talk</button><button data-gesture="Interact">Interact</button>
+      <button data-view="close">Close</button><button data-view="wide">Wide</button><button data-view="house">At Mira's house</button>
+    </div>
+    <pre id="status">Loading…</pre>
+  </div>
+  <script type="module" src="/src/dev/character-check.ts"></script>
+</body>
+</html>
