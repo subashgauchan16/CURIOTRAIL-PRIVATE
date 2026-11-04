@@ -12,10 +12,10 @@
       ],
       "unlockedBy": [],
       "position": [
-        10,
-        -24
+        -11.5,
+        171.5
       ],
-      "landmark": "The forest path below the lookout, on the island's northern rise."
+      "landmark": "The forest hamlet with the round signal tower on the island's south shore."
     },
     {
       "id": "viking-workshop",
@@ -29,10 +29,10 @@
         "missing-signal"
       ],
       "position": [
-        13,
-        7
+        -67.5,
+        -22.5
       ],
-      "landmark": "The timber workshop east of the village green."
+      "landmark": "The timber workshops west of the village square."
     },
     {
       "id": "trading-market",
@@ -46,10 +46,10 @@
         "missing-signal"
       ],
       "position": [
-        14,
-        30
+        2.5,
+        -72.5
       ],
-      "landmark": "The harbour market with three stalls and the ledger desk."
+      "landmark": "The harbour market beside the longship docks."
     },
     {
       "id": "great-hall",
@@ -64,10 +64,10 @@
         "market-ledger"
       ],
       "position": [
-        0,
-        -1
+        141.5,
+        13.5
       ],
-      "landmark": "The Jarl's longhouse at the north side of the village."
+      "landmark": "The Jarl's longhouse on the eastern hillside."
     },
     {
       "id": "web-frontier",
@@ -77,19 +77,53 @@
       "quests": [],
       "unlockedBy": "planned",
       "position": [
-        0,
-        52
+        -29.5,
+        -178.5
       ],
-      "landmark": "The arrival dock on the south shore.",
+      "landmark": "The lookout tower at the end of the northern pier.",
       "teaser": "Build a simple interactive information page."
     }
   ],
   "island": {
     "files": {
-      "low": "island-b/VikingIsland_Scene.glb"
+      "low": "island-realistic/manifest.json"
     },
-    "scale": 0.25,
+    "streamed": "island-realistic/manifest.json",
+    "lightVariant": "b",
+    "scale": 1,
     "characterScale": 1,
-    "nav": "nav-island-b.json"
+    "nav": "nav-island-realistic.json",
+    "placements": {
+      "npcs": {
+        "mira": {
+          "at": [
+            -29.5,
+            64.5
+          ],
+          "rot": 90
+        },
+        "tove": {
+          "at": [
+            3.5,
+            83.5
+          ],
+          "rot": 180
+        }
+      },
+      "objects": {
+        "basket-mira": [
+          -28.5,
+          62.5
+        ],
+        "notice-board": [
+          -15.5,
+          72.5
+        ],
+        "ledger-desk": [
+          2.5,
+          80.5
+        ]
+      }
+    }
   }
 }

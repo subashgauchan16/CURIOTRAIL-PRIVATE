@@ -144,9 +144,11 @@ describe('interaction targeting', () => {
   });
 });
 
-describe('island B data', () => {
+describe('island B data (opt-in variant ?island=b)', () => {
   const nav = JSON.parse(readFileSync('public/data/nav-island-b.json', 'utf8')) as NavData;
-  const world = JSON.parse(readFileSync('public/data/world.json', 'utf8')) as { destinations: { id: string; position: [number, number] }[] };
+  // island B's destination positions now live in its variant file (the realistic island is the default)
+  const variant = JSON.parse(readFileSync('public/data/islands/b.json', 'utf8')) as { positions: Record<string, [number, number]> };
+  const world = { destinations: Object.entries(variant.positions).map(([id, position]) => ({ id, position })) };
   const g = new NavGrid(nav);
 
   it('spawns on walkable ground', () => {

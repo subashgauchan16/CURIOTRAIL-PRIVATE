@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "note": "Opt-in island variant (open the game with ?island=b): island B, the Blender-refined 144 m block island that was the default in Stage 3. Positions and landmark texts are the Stage 3 ones; quests, unlock rules, NPC ids and dialogue come from world.json and explore.json unchanged (explore.json positions are island B's own).",
+  "island": {
+    "files": {
+      "low": "island-b/VikingIsland_Scene.glb"
+    },
+    "scale": 0.25,
+    "characterScale": 1,
+    "nav": "nav-island-b.json"
+  },
+  "positions": {
+    "signal-woods": [
+      10,
+      -24
+    ],
+    "viking-workshop": [
+      13,
+      7
+    ],
+    "trading-market": [
+      14,
+      30
+    ],
+    "great-hall": [
+      0,
+      -1
+    ],
+    "web-frontier": [
+      0,
+      52
+    ]
+  },
+  "landmarks": {
+    "signal-woods": "The forest path below the lookout, on the island's northern rise.",
+    "viking-workshop": "The timber workshop east of the village green.",
+    "trading-market": "The harbour market with three stalls and the ledger desk.",
+    "great-hall": "The Jarl's longhouse at the north side of the village.",
+    "web-frontier": "The arrival dock on the south shore."
+  }
+}

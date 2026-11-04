@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const BASE = process.env.BASE || 'http://127.0.0.1:5180/';
-const VARIANT = '?island=realistic';
+const VARIANT = process.env.VARIANT ?? '';   // the realistic island is the default; VARIANT='?island=realistic' also works
 const OUT = path.join(__dirname, '..', 'docs', 'exploration', 'stage4');
 const gpu = process.argv.includes('--gpu');
 const KEY = 'curiotrail.progress';

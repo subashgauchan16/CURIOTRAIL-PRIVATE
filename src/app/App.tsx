@@ -4,10 +4,10 @@ import { navigate, useRoute, type Route } from './router';
 import { applySettings, focusMainHeading, prefersReducedMotion } from './a11y';
 import { validateCurriculum, validateQuest, validateRequirements, validateWorld } from '../engine/quest-validation';
 import type { Curriculum, IslandOverlay, Quest, World } from '../engine/types';
-import { applyIslandOverlay, islandVariant } from './island-variant';
+import { applyIslandOverlay, chooseIslandVariant } from './island-variant';
 import { destinationStatus, destinationForQuest, questStatus } from '../engine/progression';
-import { questRecord } from '../engine/progress-store';
-import { detectQuality, webglAvailable } from '../world/capabilities';
+import { createProgressStore, questRecord } from '../engine/progress-store';
+import { detectQuality, softwareRenderer, webglAvailable } from '../world/capabilities';
 import type { CameraMode, DestinationView, WorldRenderer } from '../world/WorldRenderer';
 import type { Pose } from '../world/characters';
 import { WorldStage, type StageStatus } from '../ui/WorldStage';
@@ -32,8 +32,11 @@ async function fetchJson<T>(path: string): Promise<T> {
 
 async function loadContent(): Promise<Content> {
   let world = await fetchJson<World>('data/world.json');
-  // Opt-in island variant (e.g. ?island=realistic): the default island is unchanged without it.
-  const variant = islandVariant(location.search);
+  // Island variant: ?island=<name> when given; otherwise light-graphics devices get the island's light variant
+  // (the streamed realistic island is too heavy for phones and CPU-only WebGL). Decided once per page load.
+  const graphics = createProgressStore().load().settings.graphics;
+  const device = detectQuality() === 'low' || softwareRenderer() ? 'low' : 'high';
+  const variant = chooseIslandVariant(location.search, world, graphics, device);
   if (variant) world = applyIslandOverlay(world, await fetchJson<IslandOverlay>(`data/islands/${variant}.json`));
   const ids = world.destinations.flatMap((d) => d.quests);
   const quests = await Promise.all(ids.map((id) => fetchJson<Quest>(`data/quests/${id}.json`)));

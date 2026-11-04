@@ -6,7 +6,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const BASE = 'http://localhost:5199/';
-const OUT = path.join(__dirname, '..', 'docs', 'exploration', 'stage3');
+const B = '?island=b';   // Stage 3 checks are written for island B, now an opt-in variant
+const OUT = process.env.OUT || path.join(__dirname, '..', 'docs', 'exploration', 'stage3');
 const gpu = process.argv.includes('--gpu');
 const KEY = 'curiotrail.progress';
 const results = [];
@@ -37,9 +38,9 @@ async function openWith(browser, save, hash = '#/explore', opts = {}) {
   page.on('pageerror', (e) => page.errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') page.errors.push(m.text()); });
   if (opts.route) await page.route(opts.route, (r) => r.abort());
-  await page.goto(BASE);
+  await page.goto(BASE + B);
   await page.evaluate(([k, v]) => { localStorage.setItem(k, JSON.stringify(v)); localStorage.setItem('curiotrail.explore.controls-seen', '1'); sessionStorage.clear(); }, [KEY, save]);
-  await page.goto(BASE + hash);
+  await page.goto(BASE + B + hash);
   await page.reload();
   return page;
 }
@@ -249,7 +250,7 @@ async function placeFacing(page, x, z, tx, tz) {
   });
 
   await check('X10c', 'Cleanup: leaving exploration stops input and hides the player; no console errors', async () => {
-    await p2.goto(BASE + '#/map');
+    await p2.goto(BASE + B + '#/map');
     await p2.waitForTimeout(1500);
     const a = await stats(p2);
     expect(!a.explore.active, 'exploration still active on the map');
@@ -274,7 +275,7 @@ async function placeFacing(page, x, z, tx, tz) {
     const save = { ...afterSignal, settings: { textSize: 'normal', motion: 'system', graphics: 'off' } };
     const p = await openWith(browser, save);
     await p.getByText('Walking around the island needs 3D graphics').waitFor({ timeout: 15000 });
-    await p.goto(BASE + '#/map/trading-market');
+    await p.goto(BASE + B + '#/map/trading-market');
     await p.getByText('The Market Ledger').first().waitFor({ timeout: 10000 });
     await p.close();
   });

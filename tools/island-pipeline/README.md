@@ -1,6 +1,6 @@
 # Realistic Viking island pipeline
 
-This pipeline builds the streamed realistic island used by the opt-in variant `?island=realistic`.
+This pipeline builds the streamed realistic island, the game's default island (island B stays available as `?island=b` and is the light-graphics fallback).
 
 ## Build
 ```sh
