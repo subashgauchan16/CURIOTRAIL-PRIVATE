@@ -62,6 +62,22 @@ Files changed only where a feature needed them: `App`, `router`, `game`, `main`,
 - A half-finished old Market Ledger resumes at the first new step not yet done.
 - Migration is one-way. A v5 save opened by an older build is ignored as a newer release's data, so don't roll back the deployed build without expecting that.
 
+## Verification
+
+Run on 2026-11-04 in a cloud container with software rendering (no GPU).
+
+| Check | `main` at `07d4446` | This branch |
+|---|---|---|
+| `npm run typecheck` | Passes | Passes |
+| `npm test` | 126 passed | 304 passed |
+| `npm run build` | Passes | Passes |
+| `npm run e2e` | 35 of 35 | 36 of 36 |
+| `node e2e/explore-check.cjs` (software rendering) | 11 of 16 | 11 of 16, with the same five failures |
+
+- The first e2e run on this branch was 34 of 36. L6 failed because of a mistake in the new check itself, now fixed. A13b timed out once, which matches its intermittent record in `docs/exploration/`, then passed three isolated runs and the full run above.
+- The five exploration failures (X2, X4, X5b, X6, X10a) fail the same way on `main`. All are movement or travel checks; that suite's recorded 16 of 16 was run with `--gpu`. It should be rerun on a real GPU.
+- Not tested: real phones, real screen readers, and a real save from a deployed build. Migration was tested with constructed v3 saves.
+
 ## Open questions
 
 - **Licensing:** see [PROVENANCE.md](../PROVENANCE.md#6-material-integrated-from-the-curio-repository).
