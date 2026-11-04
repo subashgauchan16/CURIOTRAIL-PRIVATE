@@ -3,12 +3,16 @@
 // a personal prototype, not for accounts or trusted scores.
 
 import type { Quest, Run } from './types';
-import { computeStars, restoreRun } from './game-engine';
+import { computeStars, restoreRun, MEDAL_RANK, type Medal } from './game-engine';
+import { sanitizeConcepts, type ConceptRecord } from './games/mastery';
 
 export const STORAGE_KEY = 'curiotrail.progress';
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 5;
+export const MEDALS: Medal[] = ['none', 'bronze', 'silver', 'gold'];
 export const EMBLEMS = ['fox', 'owl', 'deer', 'badger'] as const;
 export const MAX_NAME_LENGTH = 24;
+
+export interface Player { name: string; emblem: Emblem }
 const MAX_XP = 100000;
 
 export type Emblem = (typeof EMBLEMS)[number];
@@ -27,17 +31,59 @@ export interface QuestRecord {
   bestStars: number;
   completed: boolean;
   completions: number;
+  /** Mastery reached (boss threshold met). Unlocks depend on this, not on XP. */
+  mastered: boolean;
+  /** Best boss mastery (0–1) across runs; null when the quest has no boss or it was never scored. */
+  bestMastery: number | null;
+  bestMedal: Medal;
+  /** Best silver purse (the optional wager side-game). Affects nothing else. */
+  bestSilver: number;
 }
 
 export interface Progress {
   version: number;
-  player: { name: string; emblem: Emblem } | null;
+  player: Player | null;
   quests: Record<string, QuestRecord>;
   achievements: string[];
   /** Lessons (theory cards) the player has read, as "questId/sceneId". */
   lessons: string[];
   settings: Settings;
+  /** Per-concept mastery (encyclopedia ids), kept on this device only. */
+  concepts: Record<string, ConceptRecord>;
+  /** Learning history behind the profile's field notes (this device only). */
+  events: LearningEvent[];
+  /** The player can pause the learning history; nothing new is recorded while false. */
+  recordEvents: boolean;
 }
+
+/**
+ * One learning event, recorded on this device only (never sent anywhere).
+ * Kept small: the log is capped at MAX_EVENTS, oldest first out.
+ *   start     a challenge step was opened with no answer yet in this run
+ *   answer    an answer was checked (ok = correct)
+ *   hint      the game showed a hint after a wrong answer
+ *   reveal    the answer was shown (asked for, or out of picks): no credit
+ *   finish    a quest run was finished (score = mastery score 0-100)
+ *   practice  a practice round was finished (ok = right first time, not revealed)
+ *   lesson    a lesson (theory card) was read
+ */
+export const EVENT_KINDS = ['start', 'answer', 'hint', 'reveal', 'finish', 'practice', 'lesson'] as const;
+export type EventKind = (typeof EVENT_KINDS)[number];
+export interface LearningEvent {
+  /** Time (ms since epoch). */
+  t: number;
+  k: EventKind;
+  /** Quest id. */
+  q: string;
+  /** Step id (absent for "finish"). */
+  s?: string;
+  /** The run's seed, so a replay's answers are counted as a new run. */
+  r?: number;
+  ok?: boolean;
+  /** "finish" only: mastery score 0-100. */
+  score?: number;
+}
+export const MAX_EVENTS = 2000;
 
 export interface StorageLike {
   getItem(key: string): string | null;
@@ -50,11 +96,11 @@ export function defaultSettings(): Settings {
 }
 
 export function defaultProgress(): Progress {
-  return { version: SCHEMA_VERSION, player: null, quests: {}, achievements: [], lessons: [], settings: defaultSettings() };
+  return { version: SCHEMA_VERSION, player: null, quests: {}, achievements: [], lessons: [], settings: defaultSettings(), concepts: {}, events: [], recordEvents: true };
 }
 
 export function emptyRecord(): QuestRecord {
-  return { run: null, runXp: 0, lastRun: null, lastXp: 0, bestXp: 0, bestStars: 0, completed: false, completions: 0 };
+  return { run: null, runXp: 0, lastRun: null, lastXp: 0, bestXp: 0, bestStars: 0, completed: false, completions: 0, mastered: false, bestMastery: null, bestMedal: 'none', bestSilver: 0 };
 }
 
 function clampInt(value: unknown, max = MAX_XP): number {
@@ -104,6 +150,11 @@ function sanitizeQuestRecord(id: string, raw: unknown): QuestRecord | null {
     bestStars: clampInt(r.bestStars, 3),
     completed: r.completed === true,
     completions: clampInt(r.completions, 9999),
+    // Saves from before mastery existed: a completed quest keeps its unlocks.
+    mastered: typeof r.mastered === 'boolean' ? r.mastered && r.completed === true : r.completed === true,
+    bestMastery: typeof r.bestMastery === 'number' && r.bestMastery >= 0 && r.bestMastery <= 1 ? r.bestMastery : null,
+    bestMedal: (MEDALS as string[]).includes(r.bestMedal as string) ? (r.bestMedal as Medal) : 'none',
+    bestSilver: clampInt(r.bestSilver),
   };
 }
 
@@ -155,7 +206,50 @@ export function migrate(raw: unknown): Record<string, unknown> | null {
     data.lessons = [];
     data.version = 3;
   }
+  if (data.version === 3) {
+    // v4 added mastery (unlocks follow mastery), medals, wagers and per-concept
+    // records. Completed quests are treated as mastered so no one loses an
+    // unlock they already earned (see sanitizeQuestRecord).
+    data.concepts = {};
+    data.version = 4;
+  }
+  if (data.version === 4) {
+    // v5 added the on-device learning history behind the profile. Older play
+    // has no history; it starts from the first step played after updating.
+    data.events = [];
+    data.recordEvents = true;
+    data.version = 5;
+  }
   return data;
+}
+
+const ID = /^[a-z0-9-]{1,64}$/;
+const EARLIEST = Date.UTC(2024, 0, 1);
+
+export function sanitizeEvents(raw: unknown, now = Date.now()): LearningEvent[] {
+  if (!Array.isArray(raw)) return [];
+  const out: LearningEvent[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const e = item as Record<string, unknown>;
+    if (!(EVENT_KINDS as readonly string[]).includes(e.k as string)) continue;
+    if (typeof e.t !== 'number' || !Number.isFinite(e.t) || e.t < EARLIEST || e.t > now + 86_400_000) continue;
+    if (typeof e.q !== 'string' || !ID.test(e.q)) continue;
+    const ev: LearningEvent = { t: Math.round(e.t), k: e.k as EventKind, q: e.q };
+    if (e.k !== 'finish') {
+      if (typeof e.s !== 'string' || !ID.test(e.s)) continue;
+      ev.s = e.s;
+    }
+    if (Number.isInteger(e.r)) ev.r = e.r as number;
+    if (typeof e.ok === 'boolean') ev.ok = e.ok;
+    if (e.k === 'finish') {
+      if (!Number.isInteger(e.score) || (e.score as number) < 0 || (e.score as number) > 100) continue;
+      ev.score = e.score as number;
+    }
+    out.push(ev);
+  }
+  out.sort((a, b) => a.t - b.t);
+  return out.slice(-MAX_EVENTS);
 }
 
 export function sanitizeProgress(raw: unknown): Progress {
@@ -182,6 +276,9 @@ export function sanitizeProgress(raw: unknown): Progress {
     achievements,
     lessons,
     settings: sanitizeSettings(data.settings),
+    concepts: sanitizeConcepts(data.concepts),
+    events: sanitizeEvents(data.events),
+    recordEvents: data.recordEvents !== false,
   };
 }
 
@@ -250,9 +347,20 @@ export function withRun(progress: Progress, run: Run, runXp: number): Progress {
 
 // Record a finished run. Replays keep the best score rather than stacking XP,
 // so total XP reflects demonstrated skill, not repetition.
-export function withCompletion(progress: Progress, run: Run, xp: number, stars: number, achievementId?: string): Progress {
+export interface CompletionResult {
+  /** Whether this run reached mastery. Defaults to true for quests without a boss. */
+  mastered?: boolean;
+  mastery?: number | null;
+  medal?: Medal;
+  silver?: number;
+}
+
+export function withCompletion(progress: Progress, run: Run, xp: number, stars: number, achievementId?: string, result: CompletionResult = {}): Progress {
   const record = questRecord(progress, run.questId);
   const alreadyCounted = Boolean(record.run && record.run.completed);
+  const mastered = result.mastered ?? true;
+  const mastery = typeof result.mastery === 'number' ? result.mastery : null;
+  const medal = result.medal ?? 'none';
   const quests = {
     ...progress.quests,
     [run.questId]: {
@@ -264,6 +372,11 @@ export function withCompletion(progress: Progress, run: Run, xp: number, stars: 
       bestStars: Math.max(record.bestStars, clampInt(stars, 3)),
       completed: true,
       completions: record.completions + (alreadyCounted ? 0 : 1),
+      // Replays never take mastery or a medal away.
+      mastered: record.mastered || mastered,
+      bestMastery: mastery === null ? record.bestMastery : Math.max(record.bestMastery ?? 0, mastery),
+      bestMedal: MEDAL_RANK[medal] > MEDAL_RANK[record.bestMedal] ? medal : record.bestMedal,
+      bestSilver: Math.max(record.bestSilver, clampInt(result.silver ?? 0)),
     },
   };
   const achievements = achievementId && !progress.achievements.includes(achievementId)
@@ -277,10 +390,51 @@ export function withReplay(progress: Progress, questId: string): Progress {
   return { ...progress, quests: { ...progress.quests, [questId]: { ...record, run: null, runXp: 0 } } };
 }
 
+/** Prefix shared by every key the game writes to browser storage. */
+export const OWNED_PREFIX = 'curiotrail.';
+
+/**
+ * Remove every CurioTrail key from one storage area: the save, modelling-lab
+ * drafts, and the exploration position and "controls seen" flag. Nothing else
+ * on the site's origin is touched.
+ */
+export function clearOwnedKeys(area: Pick<Storage, 'length' | 'key' | 'removeItem'>): void {
+  const keys: string[] = [];
+  for (let i = 0; i < area.length; i += 1) {
+    const key = area.key(i);
+    if (key?.startsWith(OWNED_PREFIX)) keys.push(key);
+  }
+  keys.forEach((key) => area.removeItem(key));
+}
+
+/** Replace the per-concept mastery records (computed by games/mastery.ts). */
+export function withConcepts(progress: Progress, concepts: Record<string, ConceptRecord>): Progress {
+  return concepts === progress.concepts ? progress : { ...progress, concepts };
+}
+
 /** Remember that a lesson was read. Lessons award no XP: XP is for demonstrated skill. */
 export function withLessonRead(progress: Progress, key: string): Progress {
   if (progress.lessons.includes(key) || !/^[a-z0-9-]{1,64}\/[a-z0-9-]{1,64}$/.test(key)) return progress;
   return { ...progress, lessons: [...progress.lessons, key] };
+}
+
+/** Add one learning event, unless the player has paused the history. */
+export function withEvent(progress: Progress, event: Omit<LearningEvent, 't'> & { t?: number }): Progress {
+  if (!progress.recordEvents) return progress;
+  const clean = sanitizeEvents([{ t: Date.now(), ...event }]);
+  if (!clean.length) return progress;
+  const events = [...progress.events, clean[0]];
+  return { ...progress, events: events.length > MAX_EVENTS ? events.slice(-MAX_EVENTS) : events };
+}
+
+/** Pause or resume the learning history. Pausing keeps what is already recorded. */
+export function withRecordEvents(progress: Progress, recordEvents: boolean): Progress {
+  return progress.recordEvents === recordEvents ? progress : { ...progress, recordEvents };
+}
+
+/** Delete the learning history only; quests, XP and settings stay. */
+export function withEventsCleared(progress: Progress): Progress {
+  return progress.events.length ? { ...progress, events: [] } : progress;
 }
 
 export function totalXp(progress: Progress): number {

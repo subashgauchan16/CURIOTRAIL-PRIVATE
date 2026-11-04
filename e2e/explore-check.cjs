@@ -275,7 +275,7 @@ async function placeFacing(page, x, z, tx, tz) {
     const p = await openWith(browser, save);
     await p.getByText('Walking around the island needs 3D graphics').waitFor({ timeout: 15000 });
     await p.goto(BASE + '#/map/trading-market');
-    await p.getByText('The Market Ledger').first().waitFor({ timeout: 10000 });
+    await p.getByText("The Merchant's Ledger").first().waitFor({ timeout: 10000 });
     await p.close();
   });
 

@@ -4,7 +4,7 @@ import { navigate } from '../../app/router';
 import { announce, focusElement } from '../../app/a11y';
 import { destinationStatus, moduleForQuest, questRequirement, questStatus, unlockRequirement, nextQuestAt, type DestinationStatus, type QuestStatus } from '../../engine/progression';
 import { questRecord, withReplay } from '../../engine/progress-store';
-import { levelFor, restoreRun } from '../../engine/game-engine';
+import { isGameQuest, levelFor, restoreRun } from '../../engine/game-engine';
 import { totalXp, totalStars } from '../../engine/progress-store';
 import type { WorldRenderer } from '../../world/WorldRenderer';
 import type { StageStatus } from '../WorldStage';
@@ -30,8 +30,13 @@ interface Props {
   webgl: boolean;
 }
 
+// Destinations already revealed this session (so the reveal plays once).
+const revealed = new Set<string>();
+
+const MEDAL_ICON: Record<string, string> = { gold: '🥇', silver: '🥈', bronze: '🥉' };
+
 export function MapScreen({ selected, renderer, stageStatus, webgl }: Props) {
-  const { world, quests, progress, update, curriculum } = useGame();
+  const { world, quests, progress, update, curriculum, lastCompletion } = useGame();
   const detailRef = useRef<HTMLDivElement>(null);
   const xp = totalXp(progress);
   const level = levelFor(xp);
@@ -45,6 +50,17 @@ export function MapScreen({ selected, renderer, stageStatus, webgl }: Props) {
     }
     return undefined;
   }, [destination]);
+
+  // A destination unlocked by the quest just finished rises out of the island.
+  useEffect(() => {
+    const ids = (lastCompletion?.unlocked ?? []).filter((id) => !revealed.has(id));
+    if (!ids.length) return undefined;
+    const t = window.setTimeout(() => {
+      ids.forEach((id) => { revealed.add(id); renderer.current?.revealUnlock(id); });
+      announce(`New destination unlocked: ${ids.map((id) => world.destinations.find((d) => d.id === id)?.name ?? id).join(', ')}.`);
+    }, 900);
+    return () => window.clearTimeout(t);
+  }, [lastCompletion, renderer, world]);
 
   // Keyboard camera controls while the map is open (not while typing).
   useEffect(() => {
@@ -108,7 +124,13 @@ export function MapScreen({ selected, renderer, stageStatus, webgl }: Props) {
                           <p className="module-tag">Module {moduleForQuest(curriculum.modules, id)!.number}: {moduleForQuest(curriculum.modules, id)!.title} · {moduleForQuest(curriculum.modules, id)!.level}</p>
                         )}
                         <p>{quest.intro}</p>
-                        {record.completed && <p className="meta">Best: {record.bestXp} XP · <Stars count={record.bestStars} /></p>}
+                        {record.completed && (
+                          <p className="meta">
+                            Best: {record.bestXp} XP{!isGameQuest(quest) && <> · <Stars count={record.bestStars} /></>}
+                            {MEDAL_ICON[record.bestMedal] && <> · <span aria-hidden="true">{MEDAL_ICON[record.bestMedal]}</span> {record.bestMedal} medal</>}
+                            {!record.mastered && <> · <span className="warn-text">final challenge not yet passed</span></>}
+                          </p>
+                        )}
                         <div className="cta-row">
                           {status === 'available' && <a className="btn btn-primary" href={`#/quest/${id}`}>Enter quest</a>}
                           {status === 'in-progress' && run && <a className="btn btn-primary" href={`#/quest/${id}`}>Continue (step {run.sceneIndex + 1} of {quest.scenes.length})</a>}
@@ -138,7 +160,11 @@ export function MapScreen({ selected, renderer, stageStatus, webgl }: Props) {
                 const next = nextQuestAt(d, quests, progress);
                 return (
                   <li key={d.id}>
-                    <a className={`destination-card destination-card--${status}`} href={`#/map/${d.id}`}>
+                    <a
+                      className={`destination-card destination-card--${status}`} href={`#/map/${d.id}`}
+                      onMouseEnter={() => renderer.current?.highlight(d.id)} onMouseLeave={() => renderer.current?.highlight(null)}
+                      onFocus={() => renderer.current?.highlight(d.id)} onBlur={() => renderer.current?.highlight(null)}
+                    >
                       <span className="dest-icon" aria-hidden="true">{d.icon}</span>
                       <span className="dest-body">
                         <span className="dest-name">{d.name}</span>

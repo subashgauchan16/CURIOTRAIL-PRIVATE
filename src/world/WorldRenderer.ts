@@ -9,6 +9,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PALETTE, createClouds, createSky, createSparkles, createWater, setWaterAnimated, updateClouds, type Water } from './environment';
+import { createMarketStall, type MarketStall } from './market';
 import { createCharacter, type Character, type Pose } from './characters';
 import type { CharacterModel } from './character-model';
 import { ExploreRuntime, type ExploreView } from './explore-runtime';
@@ -67,6 +68,10 @@ interface Marker {
   ground: THREE.Vector3;
   status: MarkerStatus;
   label?: HTMLElement;
+  /** Current hover lift (eased). */
+  lift: number;
+  /** Time an unlock reveal started, for the reveal animation. */
+  revealAt?: number;
 }
 
 const STATUS_COLOR: Record<MarkerStatus, string> = {
@@ -101,6 +106,8 @@ export class WorldRenderer {
   private character: Character | null = null;
   private characterKey: string | null = null;
   private burst: { points: THREE.Points; start: number } | null = null;
+  private stall: MarketStall | null = null;
+  private static readonly STALL_AT = 'trading-market';
   private mode: CameraMode = { kind: 'overview' };
   private flight: { fromPos: THREE.Vector3; fromTarget: THREE.Vector3; toPos: THREE.Vector3; toTarget: THREE.Vector3; start: number; duration: number } | null = null;
   private pointer = new THREE.Vector2();
@@ -371,7 +378,7 @@ export class WorldRenderer {
     hit.position.y = 12;
     hit.userData.destination = d.id;
     group.add(ring, gem, beam, hit);
-    return { id: d.id, group, ring, gem, beam, hit, ground: new THREE.Vector3(d.position[0], 20, d.position[1]), status: d.status };
+    return { id: d.id, group, ring, gem, beam, hit, ground: new THREE.Vector3(d.position[0], 20, d.position[1]), status: d.status, lift: 0 };
   }
 
   private applyStatus(marker: Marker, status: MarkerStatus) {
@@ -394,8 +401,53 @@ export class WorldRenderer {
       marker.ground.set(d.position[0], y, d.position[1]);
       marker.group.position.copy(marker.ground);
     }
+    this.placeStall();
     if (this.character && this.mode.kind !== 'overview' && this.mode.kind !== 'map') this.placeCharacter();
     this.applyMode(false);
+  }
+
+  /** The Trading Market's stall sits beside its marker, on the island surface. */
+  private placeStall() {
+    const marker = this.markers.get(WorldRenderer.STALL_AT);
+    if (!marker || !this.islandMeshes.length) return;
+    if (!this.stall) {
+      this.stall = createMarketStall();
+      this.scene.add(this.stall.group);
+    }
+    // Beside Tove, between her and the market, so the quest camera (behind
+    // her, looking at the market) keeps the stall in frame and its reactions visible.
+    const spot = this.characterSpot(WorldRenderer.STALL_AT);
+    const toMarker = marker.ground.clone().sub(spot).setY(0).normalize();
+    if (toMarker.lengthSq() < 0.5) toMarker.set(-1, 0, 0);
+    const side = new THREE.Vector3(-toMarker.z, 0, toMarker.x);
+    const at = spot.clone().add(toMarker.clone().multiplyScalar(7 * this.s)).add(side.multiplyScalar(-7 * this.s));
+    this.stall.group.position.set(at.x, this.surfaceHeight(at.x, at.z) ?? marker.ground.y, at.z);
+    // Face the stall's front (its +z side, where the coins sit) towards Tove.
+    this.stall.group.rotation.y = Math.atan2(spot.x - at.x, spot.z - at.z);
+    this.stall.group.scale.setScalar(0.75 * this.s);
+  }
+
+  /** The world reacts to the player's answer at the destination in focus. */
+  react(event: 'right' | 'wrong') {
+    const time = this.clock.getElapsed();
+    const dest = this.mode.kind === 'focus' || this.mode.kind === 'celebrate' ? this.mode.destination : null;
+    const atStall = dest === WorldRenderer.STALL_AT && this.stall;
+    if (atStall) this.stall!.react(event, time);
+    // Sparks rise from the stall itself, where the player is looking.
+    if (event === 'right' && dest) this.celebrate(dest, 70, ['#f2b134', '#ffe9a8'], atStall ? this.stall!.group.position.clone().add(new THREE.Vector3(0, 9 * this.s, 0)) : undefined);
+  }
+
+  /** Highlight a destination from outside the canvas (e.g. hovering or focusing its card in the list). */
+  highlight(id: string | null) {
+    this.setHovered(id && this.markers.has(id) ? id : null);
+  }
+
+  /** Draw attention to a newly unlocked destination (beam surge and sparks). */
+  revealUnlock(destination: string) {
+    const marker = this.markers.get(destination);
+    if (!marker) return;
+    marker.revealAt = this.clock.getElapsed();
+    this.celebrate(destination, 120, ['#2dd4bf', '#f2b134']);
   }
 
   // ---- Camera modes ----
@@ -598,18 +650,18 @@ export class WorldRenderer {
 
   // ---- Effects ----
 
-  private celebrate(destination: string) {
+  private celebrate(destination: string, count = 160, palette: [string, string] = ['#f2b134', '#2dd4bf'], origin?: THREE.Vector3) {
     const marker = this.markers.get(destination);
     if (!marker || this.options.reducedMotion) return;
     if (this.burst) this.disposeBurst();
-    const count = 160;
     const positions = new Float32Array(count * 3);
     const velocities = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
-    const gold = new THREE.Color('#f2b134');
-    const teal = new THREE.Color('#2dd4bf');
+    const gold = new THREE.Color(palette[0]);
+    const teal = new THREE.Color(palette[1]);
     for (let i = 0; i < count; i += 1) {
-      positions.set([marker.ground.x, marker.ground.y + 18 * this.s, marker.ground.z], i * 3);
+      if (origin) positions.set([origin.x, origin.y, origin.z], i * 3);
+      else positions.set([marker.ground.x, marker.ground.y + 18 * this.s, marker.ground.z], i * 3);
       const a = Math.random() * Math.PI * 2;
       const up = (12 + Math.random() * 18) * this.s;
       const out = (6 + Math.random() * 14) * this.s;
@@ -725,9 +777,23 @@ export class WorldRenderer {
       if (!still) marker.gem.rotation.y += delta * (active ? 1.2 : 0.4);
       const s = selected ? 1.35 : 1;
       marker.ring.scale.setScalar(s * (active && !still ? 1 + Math.sin(time * 3) * 0.06 : 1));
+      // Hovered or selected destinations rise and glow (instantly with reduced motion).
+      const liftTarget = selected && marker.status !== 'locked' ? 4 * this.s : 0;
+      marker.lift = still ? liftTarget : marker.lift + (liftTarget - marker.lift) * Math.min(1, delta * 8);
+      marker.group.position.y = marker.ground.y + marker.lift;
+      const gemMat = marker.gem.material as THREE.MeshLambertMaterial;
+      gemMat.emissiveIntensity = selected ? 2 : 1;
+      if (marker.revealAt !== undefined) {
+        const age = time - marker.revealAt;
+        const surge = age < 2.5 && !still ? 1 + Math.sin(Math.min(1, age / 2.5) * Math.PI) * 1.4 : 1;
+        marker.beam.scale.set(surge, surge, surge);
+        marker.beam.visible = true;
+        if (age >= 2.5) { marker.revealAt = undefined; marker.beam.scale.set(1, 1, 1); this.applyStatus(marker, marker.status); }
+      }
     }
     if (this.character) this.character.update(time, delta, still);
     for (const actor of this.actors) actor.update(delta);
+    this.stall?.update(time, delta, still);
     if (this.burst) {
       const age = time - this.burst.start;
       const attr = this.burst.points.geometry.getAttribute('position') as THREE.BufferAttribute;
@@ -803,6 +869,7 @@ export class WorldRenderer {
       character: this.borrowedNpc ?? this.characterKey,
       mode: this.mode.kind,
       explore: this.explore.stats(),
+      stall: Boolean(this.stall),
     };
   }
 
@@ -816,6 +883,7 @@ export class WorldRenderer {
     this.controls.dispose();
     this.disposeBurst();
     this.character?.dispose();
+    this.stall?.dispose();
     this.explore.dispose();
     for (const actor of this.actors) actor.dispose();
     this.actors.clear();

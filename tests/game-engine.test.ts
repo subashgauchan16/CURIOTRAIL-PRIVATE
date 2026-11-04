@@ -6,9 +6,14 @@ import { QUEST_IDS, loadQuest } from './helpers';
 const quest = loadQuest();
 
 // Answers for sql scenes need the query result; tests feed the expected rows.
-function answerFor(scene: ReturnType<typeof engine.currentScene>): Answer {
+function answerFor(scene: ReturnType<typeof engine.currentScene>, run?: Run): Answer {
   if (scene.type === 'sql') return { query: scene.solution, result: { columns: ['a', 'b'], rows: scene.expected.rows } };
-  return engine.correctAnswer(scene)!;
+  return engine.correctAnswer(scene, run)!;
+}
+
+/** Wheel steps must be spun before they can be answered. */
+function prepare(q: Quest, run: Run): Run {
+  return engine.currentScene(q, run).type === 'wheel' ? engine.spinWheel(q, run) : run;
 }
 
 function playPerfectly(q: Quest = quest): Run {
@@ -17,7 +22,8 @@ function playPerfectly(q: Quest = quest): Run {
     const scene = engine.currentScene(q, run);
     if (scene.type === 'evidence') for (const id of scene.evidence) run = engine.inspectEvidence(q, run, id);
     if (engine.isChallenge(scene)) {
-      const { run: next, outcome } = engine.submitAnswer(q, run, answerFor(scene));
+      run = prepare(q, run);
+      const { run: next, outcome } = engine.submitAnswer(q, run, answerFor(scene, run));
       expect(outcome.correct, `correct answer accepted for ${q.id}/${scene.id}: ${outcome.feedback}`).toBe(true);
       run = next;
     }
@@ -33,7 +39,7 @@ function goTo(sceneId: string, q: Quest = quest): Run {
   while (engine.currentScene(q, run).id !== sceneId) {
     const scene = engine.currentScene(q, run);
     if (scene.type === 'evidence') scene.evidence.forEach((id) => { run = engine.inspectEvidence(q, run, id); });
-    if (engine.isChallenge(scene)) run = engine.submitAnswer(q, run, answerFor(scene)).run;
+    if (engine.isChallenge(scene)) { run = prepare(q, run); run = engine.submitAnswer(q, run, answerFor(scene, run)).run; }
     run = engine.advance(q, run);
   }
   return run;

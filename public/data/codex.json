@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "source": "Excel Encyclopedia (14 volumes, 2026). Concept ids match Volume 12, CurioTrail Learning Specifications.",
+  "entries": {
+    "XL.CELL.ADDRESS": {
+      "title": "Cell addresses",
+      "summary": "Every cell has an address: its column letter, then its row number. B3 is column B, row 3. Formulas use addresses to read values.",
+      "example": "Price in column B, Honey on row 3 → B3",
+      "pitfall": "Writing the row first (3B). Excel always puts the column letter first.",
+      "ref": { "volume": "V01", "chapter": "Ch. 1 · Workbooks, worksheets and cells", "page": 3 }
+    },
+    "XL.FORMULA.ENTRY": {
+      "title": "Entering a formula",
+      "summary": "A formula starts with = and refers to cells, so it recalculates when the data changes. Without =, Excel stores your entry as text or a typed number.",
+      "example": "=B2+C2",
+      "pitfall": "Typing the answer (13) instead of a formula: it never updates.",
+      "ref": { "volume": "V01", "chapter": "Ch. 3 · Formulas and operators", "page": 12 }
+    },
+    "XL.OPS.ARITH": {
+      "title": "Arithmetic and brackets",
+      "summary": "Use + − * / and ^ with brackets to express a calculation. Brackets make Excel do one part first.",
+      "example": "Profit = (Price − Cost) × Qty → =(B2-C2)*D2",
+      "pitfall": "Leaving out brackets changes the order of work.",
+      "ref": { "volume": "V01", "chapter": "Ch. 3 · Formulas and operators", "page": 12 }
+    },
+    "XL.OPS.PRECEDENCE": {
+      "title": "Order of operations",
+      "summary": "Excel works in a fixed order: brackets, negation, %, ^, then * and /, then + and −. =2+3*4 is 14, not 20.",
+      "example": "=B2-C2*D2 multiplies first; =(B2-C2)*D2 subtracts first",
+      "pitfall": "Reading a formula left to right as if it were a sentence.",
+      "ref": { "volume": "V01", "chapter": "Ch. 3 · Formulas and operators", "page": 12 }
+    },
+    "XL.REF.RELATIVE": {
+      "title": "Relative references and fill-down",
+      "summary": "A reference without $ is stored as an offset. Filled down, =B2*C2 becomes =B3*C3, so one formula serves a whole column.",
+      "example": "D2: =B2*C2 → filled to D5: =B5*C5",
+      "pitfall": "Typing a separate formula (or number) on every row.",
+      "ref": { "volume": "V01", "chapter": "Ch. 5 · References: how formulas point at data", "page": 20 }
+    },
+    "XL.REF.ABSOLUTE": {
+      "title": "Absolute references ($)",
+      "summary": "$ locks a reference so it doesn't move when the formula is copied. Use it for single settings every row shares, like a tax rate.",
+      "example": "=B2*$E$2 filled down keeps using the rate in E2",
+      "pitfall": "=B2*E2 filled down drifts to E3, E4… which are empty, so tax shows 0.",
+      "ref": { "volume": "V01", "chapter": "Ch. 5 · References: how formulas point at data", "page": 20 }
+    },
+    "XL.FN.SUM": {
+      "title": "SUM and ranges",
+      "summary": "A range is first:last, like D2:D5. SUM adds every number in it and keeps working when values change.",
+      "example": "=SUM(D2:D5)",
+      "pitfall": "A range that stops one row short, or includes the total cell itself.",
+      "ref": { "volume": "V02", "chapter": "Ch. 1 · Totals, counts and averages", "page": 3 }
+    },
+    "XL.FN.AVERAGE": {
+      "title": "AVERAGE",
+      "summary": "AVERAGE adds a range and divides by how many numbers it contains. Choose the range as carefully as the function.",
+      "example": "=AVERAGE(B2:B5)",
+      "pitfall": "Dividing a SUM by the wrong count, or averaging the wrong column.",
+      "ref": { "volume": "V02", "chapter": "Ch. 1 · Totals, counts and averages", "page": 3 }
+    },
+    "XL.FN.MINMAX": {
+      "title": "MIN and MAX",
+      "summary": "MAX returns the largest number, MIN the smallest. MIN(a,b) also picks the smaller of two values — handy for 'you can't sell more than customers want'.",
+      "example": "=MAX(B2:B5) · =MIN(D2,E2)",
+      "pitfall": "Mixing them up, or pointing at the wrong column.",
+      "ref": { "volume": "V02", "chapter": "Ch. 1 · Totals, counts and averages", "page": 3 }
+    },
+    "XL.ERR.TYPES": {
+      "title": "The error family",
+      "summary": "#DIV/0! divides by zero or an empty cell; #NAME? doesn't recognise a word; #VALUE! does arithmetic on text; #REF! points at a deleted cell.",
+      "example": "=SUMM(D2:D5) → #NAME?",
+      "pitfall": "Hiding errors instead of reading what they say.",
+      "ref": { "volume": "V04", "chapter": "Ch. 4 · Errors and systematic debugging", "page": 13 }
+    },
+    "XL.KPI.MARGIN": {
+      "title": "Profit and margin",
+      "summary": "Profit is revenue minus cost. Everything you buy is paid for, but you only earn on what sells — unsold stock is a cost.",
+      "example": "=B2*MIN(D2,E2)-C2*E2 (price × units sold − cost × units ordered)",
+      "pitfall": "Counting profit on stock nobody bought.",
+      "ref": { "volume": "V10", "chapter": "Ch. 6 · Revenue, cost, margin and contribution analysis", "page": 23 }
+    }
+  }
+}

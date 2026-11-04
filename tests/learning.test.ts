@@ -24,10 +24,18 @@ const rel = (from: string, to: string, cardinality: LabModel['relationships'][nu
 const rules = (model: LabModel) => lab.validateModel(scene, model).issues.map((i) => `${i.severity}:${i.rule}`);
 
 describe('theory cards (lessons)', () => {
-  test('every existing quest has at least one complete lesson, linked to its objectives', () => {
+  // Game-first quests teach in context instead of front-loading theory cards:
+  // every challenge names its concepts, and each concept has a Codex card
+  // (validated against public/data/codex.json in tests/game-mechanics.test.ts).
+  test('every quest teaches: lesson cards, or concept-tagged challenges backed by the Codex', () => {
     for (const id of QUEST_IDS) {
-      const lessons = loadQuest(id).scenes.filter((s): s is LessonScene => s.type === 'lesson');
-      expect(lessons.length, id).toBeGreaterThan(0);
+      const q = loadQuest(id);
+      const lessons = q.scenes.filter((s): s is LessonScene => s.type === 'lesson');
+      if (!lessons.length) {
+        const challenges = q.scenes.filter((s) => engine.isChallenge(s));
+        expect(challenges.every((s) => s.type === 'wheel' || ((s as { concepts?: string[] }).concepts ?? []).length > 0), `${id}: untagged challenge`).toBe(true);
+        continue;
+      }
       for (const l of lessons) {
         expect(l.lesson.plainEnglish.length, `${id}/${l.id}`).toBeGreaterThan(120);
         expect(l.lesson.commonMistake.length).toBeGreaterThan(40);
@@ -86,7 +94,7 @@ describe('save migration v2 → v3 (lesson steps shift indices)', () => {
     const v2Run = { questId: q.id, sceneIndex: 5, inspected: ['notice', 'ai-draft', 'message'], results: { 'find-source': { attempts: 1, solved: true, revealed: false }, 'spot-conflict': { attempts: 2, solved: true, revealed: false }, 'verify-time': { attempts: 3, solved: true, revealed: true } }, completed: false };
     const v2 = { version: 2, player: { name: 'Asha', emblem: 'owl' }, quests: { 'missing-signal': { run: v2Run, runXp: 25, lastRun: null, lastXp: 0, bestXp: 0, bestStars: 0, completed: false, completions: 0 } }, achievements: [], settings: { motion: 'system', textSize: 'normal', graphics: 'auto' } };
     const loaded = store.createProgressStore(memoryStorage({ [store.STORAGE_KEY]: JSON.stringify(v2) })).load();
-    expect(loaded.version).toBe(3);
+    expect(loaded.version).toBe(store.SCHEMA_VERSION); // v2 → v3 → v4
     expect(loaded.player).toEqual({ name: 'Asha', emblem: 'owl' });
     expect(store.totalXp(loaded)).toBe(25);
     const run = engine.restoreRun(q, loaded.quests['missing-signal'].run);

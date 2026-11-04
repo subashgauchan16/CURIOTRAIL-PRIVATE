@@ -1,13 +1,45 @@
 // Checks quest and world content is well formed, so a content mistake shows
 // up in tests (or as a clear error) instead of as a broken quest.
 
-import type { Quest, World } from './types';
+import type { Codex, Quest, Run, SpotTask, World } from './types';
 import type { Curriculum } from './types';
-import { evaluate, correctAnswer } from './game-engine';
+import { evaluate, correctAnswer, createRun, evaluateSheet, evaluateSpot, isChallenge, normaliseAddress, spotCell, tradeProfit } from './game-engine';
 import { solutionModel, validateModel } from './schema-lab';
+import { FUNCTION_NAMES } from './games/function-names';
+import { isConceptId } from './games/mastery';
+import * as rng from './games/rng';
 
-const SCENE_TYPES = new Set(['dialogue', 'evidence', 'lesson', 'choice', 'assemble', 'sql', 'python', 'excel', 'kpi', 'schema', 'ending']);
-const CHALLENGES = ['choice', 'assemble', 'sql', 'python', 'excel', 'kpi', 'schema'];
+const CHALLENGES = ['choice', 'assemble', 'sql', 'python', 'excel', 'kpi', 'schema', 'workshop', 'repair', 'runeword', 'wheel', 'match', 'gambit', 'spot'];
+const SCENE_TYPES = new Set(['dialogue', 'evidence', 'lesson', 'ending', ...CHALLENGES]);
+
+/** Can `text` be built exactly from the given fragments (each usable any number of times)? */
+export function buildableFrom(text: string, tokens: string[]): boolean {
+  const norm = (t: string) => t.toUpperCase().replace(/\s+/g, '');
+  const target = norm(text);
+  const parts = [...new Set(tokens.map(norm))].filter(Boolean);
+  const ok: boolean[] = Array(target.length + 1).fill(false);
+  ok[0] = true;
+  for (let i = 0; i < target.length; i += 1) {
+    if (!ok[i]) continue;
+    for (const p of parts) if (target.startsWith(p, i)) ok[i + p.length] = true;
+  }
+  return ok[target.length];
+}
+
+/** A run forced onto a given data variant (index 0 = the step's default data). */
+function runWithVariant(quest: Quest, sceneId: string, index: number): Run {
+  // Search seeds deterministically until the variant draw lands on `index`.
+  for (let seed = 1; seed < 5000; seed += 1) {
+    const run = createRun(quest, seed);
+    const scene = quest.scenes.find((s) => s.id === sceneId)!;
+    const variants = (scene as { variants?: unknown[] }).variants || [];
+    if (!variants.length) return run;
+    // Same rule as variantIndex() in the engine.
+    const { draw } = rng;
+    if (Math.floor(draw(seed, `variant:${sceneId}`) * (variants.length + 1)) === index) return run;
+  }
+  throw new Error(`No seed reaches variant ${index} of ${sceneId}`);
+}
 
 const isText = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
 const duplicates = (ids: string[]) => ids.filter((id, i) => ids.indexOf(id) !== i);
@@ -136,6 +168,92 @@ export function validateQuest(quest: unknown): string[] {
       } else fail(`${at} needs a solution.`);
     }
 
+    if (isChallenge(scene)) {
+      (scene.concepts || []).forEach((c) => isConceptId(c) || fail(`${at} has a malformed concept id "${c}".`));
+    }
+
+    if (scene.type === 'spot') {
+      spotProblems(scene).forEach((p) => fail(`${at} ${p}`));
+      (scene.variants || []).forEach((v, i) => {
+        if (!Array.isArray(v.rows)) fail(`${at} variant ${i + 1} needs rows.`);
+        else spotProblems({ ...scene, rows: v.rows, answer: v.answer ?? scene.answer }).forEach((p) => fail(`${at} variant ${i + 1} ${p}`));
+      });
+    }
+
+    // Steps with data variants: the solution must pass on every variant.
+    if (scene.type === 'workshop' || scene.type === 'repair' || scene.type === 'choice' || scene.type === 'spot') {
+      const variants = scene.variants || [];
+      for (let i = 0; i <= variants.length; i += 1) {
+        if (i > 0 && (scene.type === 'workshop' || scene.type === 'repair') && (!variants[i - 1].expected || !Array.isArray(variants[i - 1].rows))) fail(`${at} variant ${i} needs rows and expected values.`);
+        if (i > 0 && scene.type === 'choice' && variants[i - 1].correct && !scene.options.some((o) => o.id === variants[i - 1].correct)) fail(`${at} variant ${i} correct answer is not an option.`);
+        if ((scene.type === 'choice' || scene.type === 'spot') && !variants.length) break;
+        const run = runWithVariant(q, scene.id, i);
+        const result = evaluate(scene, correctAnswer(scene, run)!, run);
+        if (!result.correct) fail(`${at} solution does not pass its own check on data variant ${i}: ${result.feedback ?? result.message}`);
+      }
+    }
+
+    if (scene.type === 'workshop') {
+      if (!Array.isArray(scene.tokens) || scene.tokens.length < 3) fail(`${at} needs at least three fragments on the bench.`);
+      else if (!buildableFrom(scene.solution, scene.tokens)) fail(`${at} solution cannot be built from its fragments.`);
+    }
+
+    if (scene.type === 'repair') {
+      if (!scene.diagnoses?.some((d) => d.id === scene.correctDiagnosis)) fail(`${at} correct diagnosis is not an option.`);
+      (scene.diagnoses || []).forEach((d) => (isText(d.text) && isText(d.feedback)) || fail(`${at} diagnosis "${d.id}" needs text and feedback.`));
+      if (evaluateSheet(scene, scene.broken).correct) fail(`${at} broken formula is not actually broken.`);
+      if (scene.check && !evaluateSheet({ ...scene, rows: scene.check.rows, expected: scene.check.expected }, scene.solution).correct) fail(`${at} solution fails the second dataset.`);
+    }
+
+    if (scene.type === 'runeword') {
+      if (!FUNCTION_NAMES.has(String(scene.word).toUpperCase())) fail(`${at} word "${scene.word}" is not an Excel function name.`);
+      if (!isText(scene.clue)) fail(`${at} needs a clue.`);
+      if (!(scene.maxGuesses >= 3 && scene.maxGuesses <= 8)) fail(`${at} maxGuesses must be 3–8.`);
+      if (!(scene.par >= 1 && scene.par <= scene.maxGuesses)) fail(`${at} par must be between 1 and maxGuesses.`);
+    }
+
+    if (scene.type === 'wheel') {
+      const segments = Array.isArray(scene.segments) ? scene.segments : [];
+      if (segments.length < 3) fail(`${at} needs at least three wheel segments.`);
+      duplicates(segments.map((g) => g.id)).forEach((id) => fail(`${at} has duplicate segment "${id}".`));
+      const index = scenes.indexOf(scene);
+      const introduced = new Set(scenes.slice(0, index).flatMap((s) => (isChallenge(s) ? s.concepts || [] : [])));
+      segments.forEach((g) => {
+        if (!isText(g.label) || !isText(g.explanation) || !g.hints?.length) fail(`${at} segment "${g.id}" needs a label, hints and an explanation.`);
+        // Recall rounds only draw on concepts the quest has already taught.
+        (g.concepts || []).forEach((c) => introduced.has(c) || fail(`${at} segment "${g.id}" uses concept "${c}" before it is introduced.`));
+        const c = g.challenge;
+        if (c.kind === 'choice') {
+          if (!c.options.some((o) => o.id === c.correct)) fail(`${at} segment "${g.id}" correct answer is not an option.`);
+        } else if (c.kind === 'spot') {
+          spotProblems(c).forEach((p) => fail(`${at} segment "${g.id}" ${p}`));
+        } else if (!evaluateSheet(c, c.solution).correct) fail(`${at} segment "${g.id}" solution fails its own check.`);
+      });
+    }
+
+    if (scene.type === 'match') {
+      const leftIds = (scene.left || []).map((l) => l.id);
+      const rightIds = (scene.right || []).map((r) => r.id);
+      if (leftIds.length < 3) fail(`${at} needs at least three pairs.`);
+      leftIds.forEach((id) => {
+        if (!rightIds.includes(scene.pairs?.[id])) fail(`${at} pair for "${id}" points to an unknown item.`);
+        if (!isText(scene.feedback?.[id])) fail(`${at} needs feedback for "${id}".`);
+      });
+      duplicates(leftIds.map((id) => scene.pairs?.[id])).forEach((id) => fail(`${at} right item "${id}" is used twice.`));
+    }
+
+    if (scene.type === 'gambit') {
+      const items = scene.items || [];
+      if (items.length < 2) fail(`${at} needs at least two items.`);
+      const orders = scene.solution?.orders || [];
+      const spend = items.reduce((s, it, i) => s + it.cost * (orders[i] ?? 0), 0);
+      const profit = items.reduce((s, it, i) => s + tradeProfit(it, orders[i] ?? 0), 0);
+      if (spend > scene.purse) fail(`${at} solution overspends the purse.`);
+      if (profit < scene.targetProfit) fail(`${at} solution misses the target profit.`);
+      const result = evaluate(scene, correctAnswer(scene)!);
+      if (!result.correct) fail(`${at} solution fails its own check: ${result.feedback}`);
+    }
+
     if (scene.type === 'kpi') {
       const ids = (scene.categories || []).map((c) => c.id);
       if (ids.length < 2) fail(`${at} needs at least two categories.`);
@@ -148,7 +266,28 @@ export function validateQuest(quest: unknown): string[] {
   });
 
   objectiveIds.filter((id) => !covered.has(id)).forEach((id) => fail(`Objective "${id}" is never assessed.`));
+  const boss = scenes.filter((s) => isChallenge(s) && s.boss);
+  if (boss.length && boss.length < 3) fail('A boss mission needs at least three steps.');
+  if (q.mastery && !(q.mastery.threshold > 0 && q.mastery.threshold <= q.mastery.gold && q.mastery.gold <= 1)) fail('mastery thresholds must satisfy 0 < threshold ≤ gold ≤ 1.');
   return errors;
+}
+
+/** Every concept a quest uses must have a Codex card, so the player can always look it up. */
+export function validateCodex(codex: unknown, quests: Quest[]): string[] {
+  const errors: string[] = [];
+  const c = codex as Codex | null;
+  if (!c || c.schemaVersion !== 1 || !c.entries || typeof c.entries !== 'object') return ['Codex is missing or has an unsupported schemaVersion.'];
+  for (const [id, e] of Object.entries(c.entries)) {
+    if (!isConceptId(id)) errors.push(`Codex id "${id}" is malformed.`);
+    if (!isText(e.title) || !isText(e.summary) || !e.ref || !isText(e.ref.volume) || !isText(e.ref.chapter)) errors.push(`Codex entry "${id}" needs a title, summary and reference.`);
+  }
+  for (const q of quests) {
+    for (const s of q.scenes) {
+      const ids = isChallenge(s) ? [...(s.concepts || []), ...(s.type === 'wheel' ? s.segments.flatMap((g) => g.concepts) : [])] : [];
+      ids.forEach((id) => c.entries[id] || errors.push(`Quest "${q.id}" step "${s.id}" uses concept "${id}" with no Codex entry.`));
+    }
+  }
+  return [...new Set(errors)];
 }
 
 export function validateWorld(world: unknown, questIds: string[] = []): string[] {
@@ -169,6 +308,14 @@ export function validateWorld(world: unknown, questIds: string[] = []): string[]
       if (!d.quests?.length) errors.push(`Destination "${d.id}" is not planned but has no quests.`);
     }
   });
+  const order = w?.recommendedOrder;
+  if (order !== undefined) {
+    if (!Array.isArray(order)) errors.push('recommendedOrder must be a list of quest ids.');
+    else {
+      order.forEach((q) => questIds.includes(q) || errors.push(`recommendedOrder references unknown quest "${q}".`));
+      duplicates(order).forEach((q) => errors.push(`recommendedOrder lists "${q}" twice.`));
+    }
+  }
   return errors;
 }
 
@@ -215,4 +362,23 @@ export function validateCurriculum(curriculum: unknown, questIds: string[]): str
   }
   questIds.filter((q) => !seen.has(q)).forEach((q) => errors.push(`Quest "${q}" is not in any module.`));
   return errors;
+}
+
+/** An evidence ledger must be rectangular and its answer cells must be inside it, not headings. */
+function spotProblems(task: SpotTask): string[] {
+  const problems: string[] = [];
+  if (!Array.isArray(task.columns) || task.columns.length < 2) problems.push('needs at least two columns.');
+  if (!Array.isArray(task.rows) || !task.rows.length || task.rows.some((r) => r.length !== task.columns?.length)) problems.push('rows must match its columns.');
+  if (task.select !== 'cell' && task.select !== 'row') problems.push('select must be "cell" or "row".');
+  if (!Array.isArray(task.answer) || !task.answer.length) problems.push('needs at least one answer cell.');
+  for (const a of task.answer || []) {
+    const cell = normaliseAddress(a);
+    if (!cell || cell !== a) problems.push(`answer "${a}" is not a cell address.`);
+    else if (!problems.length) {
+      const where = spotCell(task, cell);
+      if (!where.inside || where.header) problems.push(`answer ${cell} is not a data cell of the ledger.`);
+      else if (!evaluateSpot(task, cell).correct) problems.push(`answer ${cell} does not pass its own check.`);
+    }
+  }
+  return problems;
 }

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useGame } from '../app/game';
 import type { Route } from '../app/router';
 import { levelFor } from '../engine/game-engine';
@@ -14,9 +15,20 @@ export function TopBar({ route }: { route: Route }) {
   const into = level.next ? xp - level.min : 1;
   const player = progress.player;
   const current = (name: Route['name']) => (route.name === name ? 'page' : undefined);
+  // Pinned panels (the quest HUD on phones) sit just below the bar, whatever its height.
+  const bar = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = bar.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const set = () => document.documentElement.style.setProperty('--topbar-h', `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   return (
-    <header className="topbar">
+    <header className="topbar" ref={bar}>
       <div className="topbar-inner">
         <a className="brand" href="#/" aria-label="CurioTrail home">
           <img src="./favicon.svg" alt="" width="32" height="32" />

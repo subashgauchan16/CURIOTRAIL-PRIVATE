@@ -1,12 +1,27 @@
 // A small spreadsheet formula evaluator: numbers, cell references (A1, $A$1),
-// ranges inside functions (B2:B5), + - * / ^, unary minus, parentheses and
+// ranges inside functions (B2:B5), + - * / ^ and %, unary minus, parentheses and
 // SUM / AVERAGE / MIN / MAX / COUNT / ROUND. Errors use Excel's codes.
+// Operator precedence follows Excel: negation, then %, then ^ (left to right),
+// then * and /, then + and -. So =-2^2 is 4 and =2^3^2 is 64, as in Excel.
 // Also supports "fill down": copying a formula to the rows below, shifting
 // relative row references exactly like Excel's fill handle.
 
 import type { Cell } from './types';
 
 export class SheetError extends Error {}
+
+/** This is a teaching evaluator, not Excel: say so instead of inventing an Excel error. */
+export const UNSUPPORTED_PREFIX = 'Not supported in this ledger:';
+
+function unsupportedMessage(ch: string): string {
+  if ('−–—'.includes(ch)) return 'Use the ordinary minus sign (-) on your keyboard.';
+  if ('×·'.includes(ch)) return 'Use * to multiply.';
+  if ('÷'.includes(ch)) return 'Use / to divide.';
+  if ('<>'.includes(ch) || ch === '=') return `${UNSUPPORTED_PREFIX} comparisons (=, <, >) come in a later quest.`;
+  if (ch === '"' || ch === '&') return `${UNSUPPORTED_PREFIX} text and the & operator come in a later quest.`;
+  if (ch === '!') return `${UNSUPPORTED_PREFIX} references to other sheets.`;
+  return '#NAME?';
+}
 
 export type Sheet = Record<string, Cell>; // "B2" → value
 
@@ -33,15 +48,15 @@ function tokenize(src: string): Token[] {
   while (i < s.length) {
     const ch = s[i];
     if (ch === ' ') { i += 1; continue; }
-    const numMatch = /^\d+(\.\d+)?/.exec(s.slice(i));
+    const numMatch = /^(\d+(\.\d+)?|\.\d+)/.exec(s.slice(i));
     if (numMatch) { tokens.push({ t: 'num', v: numMatch[0] }); i += numMatch[0].length; continue; }
     const refMatch = /^\$?[A-Z]+\$?\d+/.exec(s.slice(i));
     if (refMatch) { tokens.push({ t: 'ref', v: refMatch[0] }); i += refMatch[0].length; continue; }
     const fnMatch = /^[A-Z][A-Z0-9.]*/.exec(s.slice(i));
     if (fnMatch) { tokens.push({ t: 'fn', v: fnMatch[0] }); i += fnMatch[0].length; continue; }
-    if ('+-*/^(),:'.includes(ch)) { tokens.push({ t: 'op', v: ch }); i += 1; continue; }
+    if ('+-*/^(),:%'.includes(ch)) { tokens.push({ t: 'op', v: ch }); i += 1; continue; }
     if (ch === ';') { tokens.push({ t: 'op', v: ',' }); i += 1; continue; }
-    throw new SheetError('#NAME?');
+    throw new SheetError(unsupportedMessage(ch));
   }
   tokens.push({ t: 'end', v: '' });
   return tokens;
@@ -64,6 +79,14 @@ function cellNumber(sheet: Sheet, ref: string): number {
   if (value === undefined || value === null || value === '') return 0;
   if (typeof value === 'number') return value;
   throw new SheetError('#VALUE!');
+}
+
+function rangeContains(from: string, to: string, cell: string): boolean {
+  const a = REF.exec(from); const b = REF.exec(to); const c = REF.exec(cell);
+  if (!a || !b || !c) return false;
+  const [c0, c1] = [a[1], b[1]].sort();
+  const [r0, r1] = [+a[2], +b[2]].sort((x, y) => x - y);
+  return c[1] >= c0 && c[1] <= c1 && +c[2] >= r0 && +c[2] <= r1;
 }
 
 function rangeValues(sheet: Sheet, from: string, to: string): number[] {
@@ -109,21 +132,31 @@ export function evaluateFormula(formula: string, sheet: Sheet, self?: string): F
       return v;
     };
     const term = (): number => {
-      let v = factor();
+      let v = power();
       while (isOp('*') || isOp('/')) {
         const op = next().v;
-        const r = factor();
+        const r = power();
         if (op === '/' && r === 0) throw new SheetError('#DIV/0!');
         v = op === '*' ? v * r : v / r;
       }
       return v;
     };
-    const factor = (): number => {
-      if (isOp('-')) { next(); return -factor(); }
-      if (isOp('+')) { next(); return factor(); }
-      const base = atom();
-      if (isOp('^')) { next(); return base ** factor(); }
-      return base;
+    // Excel evaluates ^ left to right: =2^3^2 is (2^3)^2 = 64.
+    const power = (): number => {
+      let v = percent();
+      while (isOp('^')) { next(); v **= percent(); }
+      return v;
+    };
+    const percent = (): number => {
+      let v = unary();
+      while (isOp('%')) { next(); v /= 100; }
+      return v;
+    };
+    // Negation binds tighter than ^ in Excel: =-2^2 is (-2)^2 = 4.
+    const unary = (): number => {
+      if (isOp('-')) { next(); return -unary(); }
+      if (isOp('+')) { next(); return unary(); }
+      return atom();
     };
     const args = (): number[][] => {
       const list: number[][] = [];
@@ -134,6 +167,7 @@ export function evaluateFormula(formula: string, sheet: Sheet, self?: string): F
           next();
           if (peek().t !== 'ref') throw new SheetError('#REF!');
           const to = useRef(next().v);
+          if (self && rangeContains(from, to, self)) throw new SheetError('Circular reference: the range includes this cell itself');
           list.push(rangeValues(sheet, from, to));
         } else {
           list.push([expr()]);
@@ -154,7 +188,10 @@ export function evaluateFormula(formula: string, sheet: Sheet, self?: string): F
         return v;
       }
       if (tok.t === 'fn') {
-        if (!FUNCTIONS.includes(tok.v)) throw new SheetError('#NAME?');
+        if (!FUNCTIONS.includes(tok.v)) {
+          if (tok.v === 'TRUE' || tok.v === 'FALSE') throw new SheetError(`${UNSUPPORTED_PREFIX} TRUE and FALSE come in a later quest.`);
+          throw new SheetError('#NAME?');
+        }
         if (!isOp('(')) throw new SheetError('#NAME?');
         next();
         functions.push(tok.v);
@@ -170,8 +207,7 @@ export function evaluateFormula(formula: string, sheet: Sheet, self?: string): F
           case 'COUNT': return flat.length;
           case 'ROUND': {
             const [x, d = [0]] = a;
-            const f = 10 ** (d[0] ?? 0);
-            return Math.round((x?.[0] ?? 0) * f) / f;
+            return excelRound(x?.[0] ?? 0, Math.trunc(d[0] ?? 0));
           }
           default: throw new SheetError('#NAME?');
         }
@@ -186,6 +222,22 @@ export function evaluateFormula(formula: string, sheet: Sheet, self?: string): F
   } catch (e) {
     return { ok: false, error: e instanceof SheetError ? e.message : 'There is a problem with this formula.', refs, functions };
   }
+}
+
+/**
+ * Excel's ROUND: halves round away from zero (ROUND(-2.5,0) = -3), and the
+ * decimal value is used rather than its binary approximation
+ * (ROUND(1.005,2) = 1.01, although 1.005 is stored as 1.00499999…).
+ */
+export function excelRound(value: number, digits: number): number {
+  const sign = value < 0 ? -1 : 1;
+  const abs = Math.abs(value);
+  if (digits >= 0) {
+    const f = 10 ** digits;
+    return (sign * Math.round(Number((abs * f).toPrecision(15)))) / f;
+  }
+  const f = 10 ** -digits;
+  return sign * Math.round(Number((abs / f).toPrecision(15))) * f;
 }
 
 /** Shift relative row numbers by `offset`, as Excel's fill handle does. */

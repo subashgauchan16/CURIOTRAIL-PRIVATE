@@ -12,17 +12,23 @@ export function isQuestCompleted(progress: Progress, questId: string): boolean {
   return questRecord(progress, questId).completed;
 }
 
+/** Unlocks follow mastery: a quest with a boss must reach its mastery threshold, not just be finished. */
+export function isQuestMastered(progress: Progress, questId: string): boolean {
+  const record = questRecord(progress, questId);
+  return record.completed && record.mastered;
+}
+
 export function isDestinationUnlocked(destination: Destination, progress: Progress): boolean {
   if (destination.unlockedBy === 'planned') return false;
-  return destination.unlockedBy.every((id) => isQuestCompleted(progress, id));
+  return destination.unlockedBy.every((id) => isQuestMastered(progress, id));
 }
 
 export function questStatus(quest: Quest, destination: Destination, progress: Progress): QuestStatus {
   if (!isDestinationUnlocked(destination, progress)) return 'locked';
   // Within a destination, quests unlock in order; quests may also require others.
   const index = destination.quests.indexOf(quest.id);
-  if (index > 0 && !isQuestCompleted(progress, destination.quests[index - 1])) return 'locked';
-  if ((quest.requires || []).some((id) => !isQuestCompleted(progress, id))) return 'locked';
+  if (index > 0 && !isQuestMastered(progress, destination.quests[index - 1])) return 'locked';
+  if ((quest.requires || []).some((id) => !isQuestMastered(progress, id))) return 'locked';
   const record = questRecord(progress, quest.id);
   // An unfinished run (a first attempt or a replay) takes precedence.
   if (record.run && !record.run.completed) return 'in-progress';
@@ -53,12 +59,39 @@ export function nextQuestAt(destination: Destination, quests: Map<string, Quest>
   return null;
 }
 
+/**
+ * The quest to suggest next: the first playable (available or in-progress)
+ * quest in the world's recommended order, then any other in map order.
+ * A suggestion only; unlock rules are unchanged.
+ */
+export function recommendedNext(world: World, quests: Map<string, Quest>, progress: Progress, excludeId?: string): Quest | null {
+  const playable = (id: string) => {
+    const quest = quests.get(id);
+    const dest = quest ? world.destinations.find((d) => d.quests.includes(id)) : undefined;
+    if (!quest || !dest || id === excludeId) return null;
+    const status = questStatus(quest, dest, progress);
+    return status === 'available' || status === 'in-progress' ? quest : null;
+  };
+  for (const id of world.recommendedOrder ?? []) {
+    const q = playable(id);
+    if (q) return q;
+  }
+  for (const d of world.destinations) {
+    for (const id of d.quests) {
+      const q = playable(id);
+      if (q) return q;
+    }
+  }
+  return null;
+}
+
 export function unlockRequirement(destination: Destination, quests: Map<string, Quest>, progress: Progress): string {
   if (destination.unlockedBy === 'planned') return 'Planned for a future update. There is no playable quest here yet.';
-  const missing = destination.unlockedBy.filter((id) => !isQuestCompleted(progress, id));
+  const missing = destination.unlockedBy.filter((id) => !isQuestMastered(progress, id));
   if (!missing.length) return '';
   const names = missing.map((id) => quests.get(id)?.title ?? id);
-  return `Complete ${names.map((n) => `“${n}”`).join(' and ')} to unlock.`;
+  const verb = missing.some((id) => isQuestCompleted(progress, id)) ? 'Pass the final challenge of' : 'Complete';
+  return `${verb} ${names.map((n) => `“${n}”`).join(' and ')} to unlock.`;
 }
 
 export function destinationForQuest(world: World, questId: string): Destination | undefined {
@@ -76,8 +109,8 @@ export function questRequirement(quest: Quest, destination: Destination, quests:
   if (destinationText) return destinationText;
   const index = destination.quests.indexOf(quest.id);
   const missing = [
-    ...(index > 0 && !isQuestCompleted(progress, destination.quests[index - 1]) ? [destination.quests[index - 1]] : []),
-    ...(quest.requires || []).filter((id) => !isQuestCompleted(progress, id)),
+    ...(index > 0 && !isQuestMastered(progress, destination.quests[index - 1]) ? [destination.quests[index - 1]] : []),
+    ...(quest.requires || []).filter((id) => !isQuestMastered(progress, id)),
   ];
   const unique = [...new Set(missing)];
   if (!unique.length) return '';

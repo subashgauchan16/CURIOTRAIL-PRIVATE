@@ -7,6 +7,7 @@ import { evaluatePython, str as pyStr } from '../../engine/python-lite';
 import { colName, evaluateFormula, makeSheet, splitRef } from '../../engine/excel-lite';
 import { runQuery } from '../../runtime/sql-runner';
 import { Actions, CodeBlock, EvidenceCard, Feedback, InvalidMessage, Output, Speech, type SceneProps } from './common';
+import { GameFrame, LedgerGrid } from '../games/parts';
 
 // ---- Story scenes ----
 
@@ -58,10 +59,11 @@ export function ChoiceView(props: SceneProps<ChoiceScene>) {
   const [answer, setAnswer] = useState<string | null>(null);
   const solved = result.solved;
   const selected = solved ? scene.correct : answer;
-  return (
+  const body = (
     <>
       <Speech quest={quest} scene={scene} />
       {scene.code && <CodeBlock code={scene.code} />}
+      {scene.sheet && <LedgerGrid columns={scene.sheet.columns} rows={scene.sheet.rows} label="Ledger" />}
       <form className="challenge" noValidate onSubmit={(e) => { e.preventDefault(); onCheck(answer ?? ''); }}>
         <fieldset>
           <legend className="prompt">{scene.prompt}</legend>
@@ -88,6 +90,8 @@ export function ChoiceView(props: SceneProps<ChoiceScene>) {
       <Feedback {...props} />
     </>
   );
+  // Game-first quests name the mechanic on a banner; older quests keep their look.
+  return scene.mechanic ? <GameFrame mechanic={scene.mechanic} icon={scene.boss ? '⚔️' : '🔍'}>{body}</GameFrame> : body;
 }
 
 // ---- Assemble the announcement (Missing Signal) ----

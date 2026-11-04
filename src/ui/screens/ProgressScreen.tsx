@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../../app/game';
 import { navigate } from '../../app/router';
 import { announce } from '../../app/a11y';
-import { levelFor, LEVELS, maxXp, restoreRun } from '../../engine/game-engine';
+import { isGameQuest, levelFor, LEVELS, maxXp, restoreRun } from '../../engine/game-engine';
 import { questRecord, totalStars, totalXp, withReplay, withSettings, type Settings } from '../../engine/progress-store';
 import { destinationForQuest, moduleStatus, questStatus, type ModuleStatus } from '../../engine/progression';
 import type { Quality } from '../../world/capabilities';
@@ -11,6 +11,7 @@ import type { StageStatus } from '../WorldStage';
 import { StatusChip } from './MapScreen';
 import { Stars } from '../Stars';
 import { CopyrightNotice } from '../brand/BrandMark';
+import { FieldNotes, Overview, PrivacyPanel, ProfileHeader } from '../profile/Profile';
 
 interface Props {
   webgl: boolean;
@@ -37,10 +38,13 @@ export function ProgressScreen({ webgl, autoQuality, stageStatus, renderer }: Pr
   );
 
   return (
-    <section className="progress-screen panel-center" aria-labelledby="progress-title">
-      <div className="card-solid">
-        <p className="eyebrow">Your Atlas</p>
-        <h1 id="progress-title">Progress &amp; settings</h1>
+    <section className="progress-screen pf-page" aria-labelledby="progress-title">
+      <ProfileHeader />
+      <Overview />
+      <FieldNotes />
+      <PrivacyPanel />
+      <div className="card-solid pf-atlas">
+        <h2>Progress &amp; settings</h2>
 
         <dl className="stats">
           <div className="stat"><dt>Total XP</dt><dd>{xp} <span className="of">/ {max}</span></dd></div>
@@ -95,7 +99,7 @@ export function ProgressScreen({ webgl, autoQuality, stageStatus, renderer }: Pr
         <div className="table-scroll" tabIndex={0} role="region" aria-label="Quest progress">
           <table className="progress-table">
             <thead>
-              <tr><th scope="col">Quest</th><th scope="col">Status</th><th scope="col">Best XP</th><th scope="col">Stars</th><th scope="col">Times finished</th><th scope="col"><span className="sr-only">Actions</span></th></tr>
+              <tr><th scope="col">Quest</th><th scope="col">Status</th><th scope="col">Best XP</th><th scope="col">Rating</th><th scope="col">Times finished</th><th scope="col"><span className="sr-only">Actions</span></th></tr>
             </thead>
             <tbody>
               {ordered.map((q) => {
@@ -108,7 +112,7 @@ export function ProgressScreen({ webgl, autoQuality, stageStatus, renderer }: Pr
                     <th scope="row"><span className="q-num">{String(q.number).padStart(2, '0')}</span> {q.title}<span className="q-sub">{q.subject} · {dest.name}</span></th>
                     <td><StatusChip status={status} />{run && <span className="q-sub">Step {run.sceneIndex + 1} of {q.scenes.length}</span>}</td>
                     <td>{record.bestXp} / {maxXp(q)}</td>
-                    <td><Stars count={record.bestStars} /></td>
+                    <td>{isGameQuest(q) ? <span className="q-medal">{{ gold: '🥇 Gold', silver: '🥈 Silver', bronze: '🥉 Bronze', none: record.completed ? 'No medal yet' : '—' }[record.bestMedal]}</span> : <Stars count={record.bestStars} />}</td>
                     <td>{record.completions}</td>
                     <td className="actions-cell">
                       {status === 'in-progress' && <a className="btn btn-sm btn-primary" href={`#/quest/${q.id}`}>Continue</a>}
@@ -176,7 +180,7 @@ export function ProgressScreen({ webgl, autoQuality, stageStatus, renderer }: Pr
             <button type="button" className="btn btn-danger-ghost" onClick={() => setConfirming(true)}>Reset all progress</button>
           ) : (
             <div className="confirm" role="group" aria-labelledby="confirm-text">
-              <p id="confirm-text"><strong>Erase everything?</strong> Your identity, XP, stars, badges and quest progress on this device will be deleted. This can’t be undone.</p>
+              <p id="confirm-text"><strong>Erase everything?</strong> Your identity, XP, stars, medals, badges, learning history, drafts and quest progress on this device will be deleted. This can’t be undone.</p>
               <div className="cta-row">
                 <button type="button" className="btn btn-danger" onClick={() => { reset(); announce('All progress has been reset.'); navigate('/'); }}>Yes, reset everything</button>
                 <button type="button" className="btn btn-ghost" autoFocus onClick={() => setConfirming(false)}>Keep my progress</button>

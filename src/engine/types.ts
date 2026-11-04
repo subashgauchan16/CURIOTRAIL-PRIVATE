@@ -36,6 +36,30 @@ interface ChallengeBase extends SceneBase {
   explanation: string;
   skills: string[];
   xp: number;
+  /** Encyclopedia concept ids practised here (e.g. "XL.REF.ABSOLUTE"); drive mastery and the Codex. */
+  concepts?: string[];
+  /** Part of the quest's boss mission: scored for mastery, fewer hints. */
+  boss?: boolean;
+  /** Weight of this step in the boss score (default 1). A step that checks recall rather than use counts less. */
+  bossWeight?: number;
+  /** The player may stake XP on getting this right first time. */
+  wager?: boolean;
+  /** Short name of the game mechanic, shown on the round banner (e.g. "Ledger Workshop"). */
+  mechanic?: string;
+  /** How the market stall reacts to this step's result (game quests). */
+  consequence?: 'scales' | 'crates' | 'coins';
+}
+
+/** Alternative data for a step, chosen per run so a boss cannot be memorised. */
+export interface DataVariant {
+  rows: Cell[][];
+  expected?: Record<string, number>;
+  /** For decision steps whose right answer depends on the data. */
+  correct?: string;
+  /** For evidence steps: the cells that prove the point in this variant. */
+  answer?: string[];
+  /** Text shown with the step for this variant (e.g. the figures being discussed). */
+  context?: string;
 }
 
 export interface DialogueScene extends SceneBase { type: 'dialogue' }
@@ -58,7 +82,11 @@ export interface LessonScene extends SceneBase {
   lesson: LessonContent;
   skills: string[]; // objectives this lesson teaches (links weak skills back to lessons)
 }
-export interface EndingScene extends SceneBase { type: 'ending' }
+export interface EndingScene extends SceneBase {
+  type: 'ending';
+  /** Shown instead of the ending's title and lines when the run didn't reach mastery. */
+  ifNotMastered?: { title: string; lines: string[] };
+}
 export interface EvidenceScene extends SceneBase { type: 'evidence'; evidence: string[] }
 
 export interface ChoiceOption { id: string; text: string; feedback: string; code?: boolean }
@@ -67,6 +95,38 @@ export interface ChoiceScene extends ChallengeBase {
   options: ChoiceOption[];
   correct: string;
   code?: string; // optional code/data snippet shown with the question
+  /** Optional ledger shown with the question (e.g. "explain the outcome"); variants may change it. */
+  sheet?: { columns: string[]; rows: Cell[][] };
+  variants?: DataVariant[];
+}
+
+/** A ledger the player reads and points at (shared by evidence steps and wheel segments). */
+export interface SpotTask {
+  columns: string[];
+  rows: Cell[][];
+  /** "cell": only the listed cells count; "row": any cell in a listed cell's row counts. */
+  select: 'cell' | 'row';
+  /** The cell(s) that answer the question. */
+  answer: string[];
+  /** Feedback for particular wrong picks, keyed by cell ("C3") or row ("row:4"). */
+  feedback?: Record<string, string>;
+  successFeedback?: string;
+}
+
+/**
+ * Point at the evidence: the player selects the cell (or row) in the ledger
+ * that answers the question, by clicking it or typing its address.
+ */
+export interface SpotScene extends ChallengeBase, SpotTask {
+  type: 'spot';
+  /**
+   * A working column the player fills with a formula (filled down). Without
+   * `solutions` it is an optional aid and never scored. With `solutions` it is
+   * required and assessed first: it must produce the same column as one of
+   * the solution formulas on this run's data before the pick is checked.
+   */
+  scratch?: { label: string; solutions?: string[] };
+  variants?: DataVariant[];
 }
 
 export interface AssembleOption { id: string; text: string; correct?: boolean; feedback?: string }
@@ -115,6 +175,94 @@ export interface ExcelScene extends ChallengeBase {
   requireFunctions?: string[];
   starter?: string;
   solution: string;
+  successFeedback?: string;
+}
+
+/** Build a formula from fragment tokens on a live ledger (drag, tap or keyboard). */
+export interface WorkshopScene extends ChallengeBase {
+  type: 'workshop';
+  columns: string[];
+  rows: Cell[][];
+  target: string;
+  fillDownTo?: string;
+  expected: Record<string, number>;
+  requireFunctions?: string[];
+  solution: string;
+  /** Fragments offered on the bench, including some that are not needed. */
+  tokens: string[];
+  variants?: DataVariant[];
+  successFeedback?: string;
+}
+
+/** Diagnose why a formula is wrong, then fix it. The fix is also run on a second dataset. */
+export interface RepairScene extends ChallengeBase {
+  type: 'repair';
+  columns: string[];
+  rows: Cell[][];
+  target: string;
+  fillDownTo?: string;
+  expected: Record<string, number>;
+  broken: string;
+  diagnoses: { id: string; text: string; feedback: string }[];
+  correctDiagnosis: string;
+  solution: string;
+  requireFunctions?: string[];
+  /** A second dataset the fix must also handle, so a typed-in answer cannot pass. */
+  check?: { rows: Cell[][]; expected: Record<string, number> };
+  variants?: DataVariant[];
+  successFeedback?: string;
+}
+
+/** Guess the hidden function name from a business clue (Wordle-style). */
+export interface RunewordScene extends ChallengeBase {
+  type: 'runeword';
+  word: string;
+  clue: string;
+  /** Guesses allowed before the answer can be revealed. */
+  maxGuesses: number;
+  /** Solving within this many guesses counts as "first try" for stars, wagers and mastery. */
+  par: number;
+}
+
+export interface WheelChoice { kind: 'choice'; prompt: string; options: ChoiceOption[]; correct: string; code?: string }
+export interface WheelSpot extends SpotTask { kind: 'spot'; prompt: string }
+export interface WheelFormula {
+  kind: 'formula'; prompt: string; columns: string[]; rows: Cell[][]; target: string; fillDownTo?: string;
+  expected: Record<string, number>; solution: string; requireFunctions?: string[]; requireRefs?: string[];
+}
+export interface WheelSegment {
+  id: string;
+  label: string; // rune / function family shown on the wheel
+  concepts: string[];
+  challenge: WheelChoice | WheelFormula | WheelSpot;
+  hints: string[];
+  explanation: string;
+}
+/** Spin the rune wheel; the landed segment sets the challenge. The spin never decides a payout. */
+export interface WheelScene extends ChallengeBase {
+  type: 'wheel';
+  segments: WheelSegment[];
+}
+
+/** Pair items (errors with causes, questions with functions…). */
+export interface MatchScene extends ChallengeBase {
+  type: 'match';
+  left: { id: string; text: string; code?: boolean }[];
+  right: { id: string; text: string; code?: boolean }[];
+  pairs: Record<string, string>;
+  feedback: Record<string, string>; // per left id, shown when that pair is wrong
+  successFeedback?: string;
+}
+
+/** Restock decision: the player's own profit formula and order quantities decide the outcome. */
+export interface GambitScene extends ChallengeBase {
+  type: 'gambit';
+  /** Item, Price, Cost, Demand (columns A–D); Order is column E, Profit column F. */
+  items: { name: string; price: number; cost: number; demand: number }[];
+  purse: number;
+  targetProfit: number;
+  maxOrder: number;
+  solution: { orders: number[]; formula: string };
   successFeedback?: string;
 }
 
@@ -171,7 +319,9 @@ export interface LabModel {
   factTable: string | null;
 }
 
-export type ChallengeScene = ChoiceScene | AssembleScene | SqlScene | PythonScene | ExcelScene | KpiScene | SchemaScene;
+export type ChallengeScene =
+  | ChoiceScene | AssembleScene | SqlScene | PythonScene | ExcelScene | KpiScene | SchemaScene
+  | WorkshopScene | RepairScene | RunewordScene | WheelScene | MatchScene | GambitScene | SpotScene;
 export type Scene = DialogueScene | EvidenceScene | EndingScene | LessonScene | ChallengeScene;
 
 export interface Quest {
@@ -193,6 +343,8 @@ export interface Quest {
   takeaway: string;
   /** Quests that must be completed first (prerequisite-based unlocking). */
   requires?: string[];
+  /** Boss mastery needed to count as mastered (unlocks), and for a gold medal. */
+  mastery?: { threshold: number; gold: number };
   scenes: Scene[];
 }
 
@@ -218,6 +370,11 @@ export interface IslandConfig {
 
 export interface World {
   schemaVersion: 1;
+  /**
+   * The suggested order for the "Next" quest (a recommendation only: it never
+   * locks anything). Quests not listed fall back to the map order.
+   */
+  recommendedOrder?: string[];
   destinations: Destination[];
   island?: IslandConfig;
 }
@@ -234,6 +391,14 @@ export interface Run {
   inspected: string[];
   results: Record<string, ChallengeResult>;
   completed: boolean;
+  /** Chooses data variants and wheel spins; fixed per run so results are reproducible. */
+  seed?: number;
+  /** XP staked per step (placed before the first attempt). */
+  wagers?: Record<string, number>;
+  /** Landed wheel segment id per wheel step. */
+  spins?: Record<string, string>;
+  /** Guesses made per rune-word step. */
+  guesses?: Record<string, string[]>;
 }
 
 export interface SqlResult { columns: string[]; rows: Cell[][] }
@@ -245,7 +410,13 @@ export type Answer =
   | { expression: string } // python
   | { formula: string } // excel
   | { placement: Record<string, string> } // kpi
-  | { model: LabModel }; // schema lab
+  | { model: LabModel } // schema lab
+  | { diagnosis: string; formula: string } // repair
+  | { guess: string } // runeword
+  | { response: string | { formula: string } | { cell: string } } // wheel (answer to the landed segment)
+  | { cell: string; working?: string } // spot (the selected cell's address, and the working formula if required)
+  | { pairs: Record<string, string> } // match
+  | { orders: number[]; formula: string }; // gambit
 
 export interface Issue { id: string; label: string; text: string }
 
@@ -260,7 +431,38 @@ export interface Outcome {
   hint?: string | null;
   canReveal?: boolean;
   explanation?: string;
+  /** Rune-word tile colours for the guess just made. */
+  tiles?: Tile[];
+  /** Gambit: how the restock played out, row by row. */
+  trade?: TradeReport;
+  /** Evidence steps: the cell that was judged (absent when the working column failed first). */
+  pick?: string;
+  /** Evidence steps: wrong picks still allowed before the answer is shown. */
+  picksLeft?: number;
+  /** Evidence steps: the pick limit was reached, so the answer was shown (no credit). */
+  locked?: boolean;
 }
+
+export type Tile = 'hit' | 'near' | 'miss';
+
+export interface TradeReport {
+  rows: { item: string; order: number; sold: number; leftover: number; profit: number; yours: number | null }[];
+  spend: number;
+  purse: number;
+  total: number;
+  target: number;
+}
+
+// ---- Codex (encyclopedia cards) ----
+
+export interface CodexEntry {
+  title: string;
+  summary: string;
+  example?: string;
+  pitfall?: string;
+  ref: { volume: string; chapter: string; page?: number };
+}
+export interface Codex { schemaVersion: 1; source: string; entries: Record<string, CodexEntry> }
 
 // ---- Curriculum (modules) ----
 

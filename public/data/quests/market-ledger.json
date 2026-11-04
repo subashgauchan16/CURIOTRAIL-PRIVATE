@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "id": "market-ledger",
   "number": 4,
-  "title": "The Market Ledger",
-  "completionTitle": "The books balance",
+  "title": "The Merchant's Ledger",
+  "completionTitle": "The audit is passed",
   "region": "trading-market",
   "destination": "trading-market",
   "subject": "Excel",
-  "estimatedMinutes": "6–10",
-  "intro": "Tove's trading post keeps its accounts in a spreadsheet, but the totals are missing. Write real formulas to work out revenue, totals and averages.",
+  "estimatedMinutes": "15–20",
+  "intro": "Tove's ledger is a mess and Hrolf the tax collector arrives at sundown. Rebuild the books with real formulas, win the restock gamble, then survive the audit.",
   "objectives": [
     {
       "id": "read-cells",
@@ -16,15 +16,23 @@
     },
     {
       "id": "write-formulas",
-      "label": "Write formulas that calculate from cells"
+      "label": "Build formulas that calculate from cells and fill down"
     },
     {
       "id": "use-ranges",
-      "label": "Use functions such as SUM and AVERAGE on ranges"
+      "label": "Choose and use SUM, AVERAGE, MIN and MAX on ranges"
     },
     {
       "id": "absolute-refs",
       "label": "Know when to fix a reference with $"
+    },
+    {
+      "id": "debug-formulas",
+      "label": "Diagnose and repair broken formulas"
+    },
+    {
+      "id": "decide-with-data",
+      "label": "Use your calculations to make and explain a decision"
     }
   ],
   "characters": {
@@ -32,20 +40,29 @@
       "name": "Tove",
       "role": "Trader at the harbour market",
       "initial": "T"
+    },
+    "hrolf": {
+      "name": "Hrolf",
+      "role": "The Jarl's tax collector",
+      "initial": "H"
     }
   },
   "evidence": [],
   "xp": {
     "firstTryBonus": 5,
-    "completion": 25
+    "completion": 30
+  },
+  "mastery": {
+    "threshold": 0.7,
+    "gold": 0.85
   },
   "badge": {
     "id": "ledger-keeper",
     "name": "Ledger Keeper",
     "icon": "📊",
-    "description": "Built working spreadsheet formulas instead of typing in answers."
+    "description": "Rebuilt a trading ledger with working formulas and passed the tax collector's audit."
   },
-  "takeaway": "Formulas refer to cells, not typed numbers, so they update when the data changes. Ranges like B2:B5 feed functions such as SUM and AVERAGE, and a $ fixes a reference when you fill a formula down.",
+  "takeaway": "Formulas refer to cells, not typed numbers, so they update when the data changes. Ranges feed SUM, AVERAGE, MIN and MAX; $ fixes a reference when you fill down; and Excel does * and / before + and −. When a ledger looks wrong, diagnose before you fix — then let the numbers decide.",
   "scenes": [
     {
       "id": "arrive",
@@ -53,68 +70,18 @@
       "title": "The harbour market",
       "speaker": "tove",
       "lines": [
-        "Fresh furs, Baltic amber, honey from the hills! Oh, you're the Pathfinder Mira mentioned.",
-        "My spreadsheet lists what I sold this week, but I never worked out the money. I just guess.",
-        "Teach me to let the spreadsheet do the sums, and I'll stop guessing."
+        "Pathfinder! Thank the tides. My ledger is a wreck: blank totals, wrong taxes, numbers I just guessed.",
+        "See my scales? They tip whenever the ledger is wrong. Hrolf the tax collector arrives at sundown, and he checks every coin.",
+        "Help me rebuild the books — properly, with formulas — and you'll share in the profits."
       ],
-      "action": "Open the spreadsheet"
-    },
-    {
-      "id": "lesson-cells-formulas",
-      "type": "lesson",
-      "title": "Learn: cells, formulas and filling down",
-      "speaker": "tove",
-      "skills": [
-        "read-cells",
-        "write-formulas"
-      ],
-      "action": "Start the guided exercise",
-      "lesson": {
-        "concept": "Cells, formulas and filling down",
-        "objective": "Find cells by address and write a formula once for a whole column.",
-        "plainEnglish": "Every cell has an address: its column letter, then its row number, like C4. A formula starts with = and can refer to other cells, such as =C4*D4. When you copy a formula down a column with the fill handle, Excel shifts the row numbers for you, so =C4*D4 becomes =C5*D5 on the next row.",
-        "analogy": "Grid references on a map: “column C, row 4” finds exactly one square.",
-        "example": {
-          "kind": "excel",
-          "code": "     A         B       C        D\n1  Room      Floor   Length   Width\n2  Kitchen   1       4        3       E2: =C2*D2  → 12\n3  Hall      1       6        2       E3: =C3*D3  → 12 (filled down)",
-          "caption": "Each room’s area: one formula, filled down."
-        },
-        "whyItMatters": "Formulas that refer to cells update automatically when the data changes, and one formula can serve a whole column.",
-        "commonMistake": "Typing the result (12) instead of a formula, or forgetting the = so Excel treats the entry as text.",
-        "takeaway": "Start with =, refer to cells, and fill down."
-      }
+      "action": "Open the ledger"
     },
     {
       "id": "find-cell",
-      "type": "choice",
-      "title": "Finding your way around",
+      "title": "Where is the honey?",
+      "mechanic": "Ledger hunt",
       "speaker": "tove",
       "context": "Every cell has an address: its column letter, then its row number.",
-      "code": "     A        B       C\n1  Item     Price   Qty sold\n2  Furs       25       6\n3  Honey       8      15\n4  Amber      40       3\n5  Rope        5      22",
-      "prompt": "Which cell holds the price of Honey?",
-      "options": [
-        {
-          "id": "B3",
-          "text": "B3",
-          "feedback": "Yes. Price is column B and Honey is on row 3, so B3 holds 8."
-        },
-        {
-          "id": "C3",
-          "text": "C3",
-          "feedback": "C3 is Honey's quantity sold (15). Price is in column B."
-        },
-        {
-          "id": "B2",
-          "text": "B2",
-          "feedback": "B2 is the price of Furs. Honey is one row down."
-        },
-        {
-          "id": "A3",
-          "text": "A3",
-          "feedback": "A3 holds the word Honey itself. The price is to its right."
-        }
-      ],
-      "correct": "B3",
       "hints": [
         "Column letter first, then row number.",
         "Find the Price column, then go down to Honey's row."
@@ -123,15 +90,61 @@
       "skills": [
         "read-cells"
       ],
-      "xp": 10
+      "concepts": [
+        "XL.CELL.ADDRESS"
+      ],
+      "xp": 10,
+      "phase": "guided",
+      "type": "spot",
+      "prompt": "A customer wants the honey price. Select the cell that holds it, or type its address in the name box.",
+      "columns": [
+        "Item",
+        "Price",
+        "Qty sold"
+      ],
+      "rows": [
+        [
+          "Furs",
+          25,
+          6
+        ],
+        [
+          "Honey",
+          8,
+          15
+        ],
+        [
+          "Amber",
+          40,
+          3
+        ],
+        [
+          "Rope",
+          5,
+          22
+        ]
+      ],
+      "select": "cell",
+      "answer": [
+        "B3"
+      ],
+      "feedback": {
+        "C3": "C3 is Honey's quantity sold (15). The price is in column B.",
+        "B2": "B2 is the price of Furs. Honey is one row down.",
+        "A3": "A3 holds the word Honey itself. Its price is to the right.",
+        "B1": "B1 is the Price heading. Honey's price is further down the column."
+      },
+      "successFeedback": "B3: column B is Price, row 3 is Honey. Tove chalks 8 silver on the slate.",
+      "consequence": "coins"
     },
     {
       "id": "row-revenue",
-      "type": "excel",
-      "title": "Revenue per item",
+      "type": "workshop",
+      "title": "Balance the scales",
+      "mechanic": "Ledger Workshop",
       "speaker": "tove",
-      "context": "Revenue is price times quantity. Write it once and the spreadsheet fills it down for the other items.",
-      "prompt": "Type a formula in D2 that calculates revenue for Furs. It will be filled down to D5.",
+      "context": "Revenue is price times quantity. Build it once in D2 — the ledger fills it down to D5 like Excel's fill handle.",
+      "prompt": "Build the revenue formula for Furs in D2 from the fragments on the bench.",
       "columns": [
         "Item",
         "Price",
@@ -172,51 +185,43 @@
         "D4": 120,
         "D5": 110
       },
-      "starter": "=",
       "solution": "=B2*C2",
-      "successFeedback": "All four revenues are right: 150, 120, 120 and 110.",
+      "tokens": [
+        "=",
+        "B2",
+        "C2",
+        "*",
+        "+",
+        "$B$2",
+        "$C$2",
+        "25",
+        "6"
+      ],
+      "consequence": "scales",
+      "successFeedback": "All four revenues are right: 150, 120, 120 and 110. The scales settle.",
       "hints": [
         "Formulas start with =, then use cell addresses instead of numbers.",
         "Furs' price is in B2 and its quantity in C2. Multiply them with *."
       ],
-      "explanation": "=B2*C2 multiplies two cells. When it's filled down, Excel shifts the row numbers (B3*C3, B4*C4…), which is why referring to cells beats typing numbers.",
+      "explanation": "=B2*C2 multiplies two cells. Filled down, Excel shifts the row numbers (B3*C3, B4*C4…), which is why referring to cells beats typing numbers.",
       "skills": [
         "write-formulas"
+      ],
+      "concepts": [
+        "XL.FORMULA.ENTRY",
+        "XL.REF.RELATIVE"
       ],
       "xp": 15,
       "phase": "guided"
     },
     {
-      "id": "lesson-ranges",
-      "type": "lesson",
-      "title": "Learn: ranges and functions",
-      "speaker": "tove",
-      "skills": [
-        "use-ranges"
-      ],
-      "action": "Start the guided exercise",
-      "lesson": {
-        "concept": "Ranges and functions",
-        "objective": "Use functions such as SUM and AVERAGE on a block of cells.",
-        "plainEnglish": "A range is a block of cells written first:last, like E2:E9. Functions take ranges and return one result: SUM adds them, AVERAGE finds the mean, MIN and MAX find the smallest and largest, and COUNT counts the numbers.",
-        "analogy": "Pointing at a pile of receipts and saying “add these up”, instead of reading each one out loud.",
-        "example": {
-          "kind": "excel",
-          "code": "=SUM(E2:E9)       total of E2 to E9\n=MAX(B2:B20)      largest value in B2 to B20\n=AVERAGE(C2:C5)   mean of four cells",
-          "caption": "Function name, then the range in brackets."
-        },
-        "whyItMatters": "Ranges keep formulas short, readable and correct when values change. Adding cells one by one is slow and easy to get wrong.",
-        "commonMistake": "Choosing the wrong range, for example including a header or an existing total row, which counts it twice.",
-        "takeaway": "=FUNCTION(first:last), and check the range covers exactly the cells you mean."
-      }
-    },
-    {
       "id": "total",
-      "type": "excel",
-      "title": "The week's total",
+      "type": "workshop",
+      "title": "Fill the coin chest",
+      "mechanic": "Ledger Workshop",
       "speaker": "tove",
-      "context": "Now the most important number: how much did I take in altogether?",
-      "prompt": "Type a formula in D6 that adds up all the revenue in D2 to D5.",
+      "context": "Now the number that matters most: everything I took in this week.",
+      "prompt": "Build a formula in D6 that totals the revenue in D2 to D5.",
       "columns": [
         "Item",
         "Price",
@@ -262,26 +267,41 @@
       "requireFunctions": [
         "SUM"
       ],
-      "starter": "=",
       "solution": "=SUM(D2:D5)",
-      "successFeedback": "500 in total this week.",
+      "tokens": [
+        "=",
+        "SUM(",
+        "AVERAGE(",
+        "D2:D5",
+        "D2:D6",
+        "B2:B5",
+        ")",
+        "+"
+      ],
+      "consequence": "coins",
+      "successFeedback": "500 silver in the chest this week.",
       "hints": [
         "SUM adds up a range of cells.",
-        "A range is written first:last, like D2:D5."
+        "A range is written first:last, like D2:D5. Don't include the total cell itself."
       ],
       "explanation": "=SUM(D2:D5) adds every cell from D2 to D5. If a sale is corrected, the total updates by itself, unlike =150+120+120+110.",
       "skills": [
         "use-ranges"
       ],
-      "xp": 15
+      "concepts": [
+        "XL.FN.SUM"
+      ],
+      "xp": 15,
+      "phase": "guided"
     },
     {
       "id": "average-price",
-      "type": "excel",
-      "title": "The average price",
+      "type": "workshop",
+      "title": "The typical price",
+      "mechanic": "Ledger Workshop",
       "speaker": "tove",
-      "context": "A customer asked what my goods cost on average.",
-      "prompt": "Type a formula in B6 that calculates the average price of the four items.",
+      "context": "A sailor asks what my goods cost on average. Not the total — the typical price.",
+      "prompt": "Build a formula in B6 for the average price of the four items.",
       "columns": [
         "Item",
         "Price",
@@ -327,73 +347,1605 @@
       "requireFunctions": [
         "AVERAGE"
       ],
-      "starter": "=",
       "solution": "=AVERAGE(B2:B5)",
-      "successFeedback": "An average price of 19.5.",
+      "tokens": [
+        "=",
+        "AVERAGE(",
+        "SUM(",
+        "B2:B5",
+        "D2:D5",
+        "C2:C5",
+        ")",
+        "/",
+        "4"
+      ],
+      "consequence": "coins",
+      "successFeedback": "An average price of 19.5 silver.",
       "hints": [
         "There's a function named after exactly what you want.",
-        "=AVERAGE(…) with the range of prices, B2 to B5."
+        "AVERAGE of the price column, B2 to B5."
       ],
       "explanation": "AVERAGE adds a range and divides by how many numbers it contains. Choosing the right range matters as much as the right function.",
       "skills": [
-        "use-ranges",
-        "write-formulas"
+        "use-ranges"
       ],
-      "xp": 15
+      "concepts": [
+        "XL.FN.AVERAGE"
+      ],
+      "xp": 15,
+      "phase": "practice"
+    },
+    {
+      "id": "rune-max",
+      "type": "runeword",
+      "title": "The rune of the greatest",
+      "mechanic": "Rune-word · discovery",
+      "speaker": "tove",
+      "context": "The rune-stone by my stall hides the name of a function. Guess it in six tries — real Excel functions only.",
+      "prompt": "Which function finds the most expensive item on the stall?",
+      "clue": "It looks along a range and returns the largest number. Its opposite finds the smallest.",
+      "word": "MAX",
+      "maxGuesses": 6,
+      "par": 3,
+      "wager": true,
+      "hints": [
+        "It's three letters long and stands for 'maximum'.",
+        "M _ X"
+      ],
+      "explanation": "MAX returns the largest number in a range; MIN returns the smallest. Both skip text, so a header won't confuse them.",
+      "skills": [
+        "use-ranges"
+      ],
+      "concepts": [
+        "XL.FN.MINMAX"
+      ],
+      "xp": 15,
+      "phase": "practice"
+    },
+    {
+      "id": "highest-price",
+      "type": "workshop",
+      "title": "The prize of the stall",
+      "mechanic": "Ledger Workshop",
+      "speaker": "tove",
+      "context": "The most precious item goes at the front of the stall. Use the rune you just uncovered.",
+      "prompt": "Build a formula in B6 that returns the highest price.",
+      "columns": [
+        "Item",
+        "Price",
+        "Qty sold",
+        "Revenue"
+      ],
+      "rows": [
+        [
+          "Furs",
+          25,
+          6,
+          150
+        ],
+        [
+          "Honey",
+          8,
+          15,
+          120
+        ],
+        [
+          "Amber",
+          40,
+          3,
+          120
+        ],
+        [
+          "Rope",
+          5,
+          22,
+          110
+        ],
+        [
+          "Highest",
+          null,
+          null,
+          null
+        ]
+      ],
+      "target": "B6",
+      "expected": {
+        "B6": 40
+      },
+      "requireFunctions": [
+        "MAX"
+      ],
+      "solution": "=MAX(B2:B5)",
+      "tokens": [
+        "=",
+        "MAX(",
+        "MIN(",
+        "SUM(",
+        "B2:B5",
+        "C2:C5",
+        ")"
+      ],
+      "consequence": "crates",
+      "successFeedback": "40 silver: the amber takes pride of place.",
+      "hints": [
+        "You want the largest value in the price column.",
+        "=MAX(B2:B5)"
+      ],
+      "explanation": "MAX looks through the range and returns the largest number: 40, the amber.",
+      "skills": [
+        "use-ranges"
+      ],
+      "concepts": [
+        "XL.FN.MINMAX"
+      ],
+      "xp": 15,
+      "phase": "practice"
     },
     {
       "id": "absolute",
-      "type": "choice",
-      "title": "The fixed tax rate",
+      "type": "repair",
+      "title": "The vanishing tax",
+      "mechanic": "Repair Mission",
       "speaker": "tove",
-      "context": "The harbour tax rate (10%) is in cell F1. Tove typed =D2*F1 in E2 and filled it down. E2 is right, but E3, E4 and E5 all show 0.",
-      "code": "     D          E            F\n1  Revenue    Tax          10%\n2    150      =D2*F1   → 15\n3    120      =D3*F2   → 0\n4    120      =D4*F3   → 0",
-      "prompt": "What's going wrong, and how do you fix it?",
-      "options": [
+      "context": "The harbour tax rate sits in E2. I typed =B2*E2 in C2 and filled it down. Furs are taxed, but everything else shows 0.",
+      "prompt": "Diagnose what went wrong, then repair the formula in C2 (it is filled down to C5).",
+      "columns": [
+        "Item",
+        "Revenue",
+        "Tax",
+        "Setting",
+        "Value"
+      ],
+      "rows": [
+        [
+          "Furs",
+          150,
+          null,
+          "Tax rate",
+          0.1
+        ],
+        [
+          "Honey",
+          120,
+          null,
+          null,
+          null
+        ],
+        [
+          "Amber",
+          120,
+          null,
+          null,
+          null
+        ],
+        [
+          "Rope",
+          110,
+          null,
+          null,
+          null
+        ]
+      ],
+      "target": "C2",
+      "fillDownTo": "C5",
+      "expected": {
+        "C2": 15,
+        "C3": 12,
+        "C4": 12,
+        "C5": 11
+      },
+      "broken": "=B2*E2",
+      "diagnoses": [
         {
-          "id": "dollar",
-          "text": "Filling down shifted F1 to F2, F3…, which are empty. Use $F$1 to keep it fixed",
-          "feedback": "Exactly. $ before the column and row locks the reference, so every row uses the tax rate in F1."
+          "id": "drift",
+          "text": "Filling down moved E2 to E3, E4, E5 — which are empty",
+          "feedback": "That's the cause: relative references move when filled."
         },
         {
-          "id": "type",
-          "text": "10% should be typed into every row of column F",
-          "feedback": "That works, but copying the rate everywhere means changing it in many places later. A fixed reference is the better fix."
+          "id": "operator",
+          "text": "* should be + for tax",
+          "feedback": "Tax is revenue times the rate, so * is right. Look at how the formula changes from row to row."
         },
         {
-          "id": "sum",
-          "text": "Use SUM instead of *",
-          "feedback": "SUM adds things up. Tax is revenue times the rate, so * is right. The reference is the problem."
+          "id": "rate",
+          "text": "The rate in E2 is wrong",
+          "feedback": "E2 is fine — Furs get the right tax. The other rows aren't reading E2 at all."
         },
         {
-          "id": "broken",
-          "text": "The spreadsheet is broken. Retype the formula in each cell",
-          "feedback": "Nothing is broken. Excel did exactly what relative references do when filled down."
+          "id": "function",
+          "text": "It needs SUM to work",
+          "feedback": "SUM adds up ranges; this is one revenue times one rate. The reference is the problem."
         }
       ],
-      "correct": "dollar",
+      "correctDiagnosis": "drift",
+      "solution": "=B2*$E$2",
+      "check": {
+        "rows": [
+          [
+            "Furs",
+            100,
+            null,
+            "Tax rate",
+            0.2
+          ],
+          [
+            "Honey",
+            50,
+            null,
+            null,
+            null
+          ],
+          [
+            "Amber",
+            80,
+            null,
+            null,
+            null
+          ],
+          [
+            "Rope",
+            200,
+            null,
+            null,
+            null
+          ]
+        ],
+        "expected": {
+          "C2": 20,
+          "C3": 10,
+          "C4": 16,
+          "C5": 40
+        }
+      },
+      "successFeedback": "Every row now uses the rate in E2: 15, 12, 12 and 11.",
       "hints": [
-        "Look at how the formula changes from row 2 to row 3.",
-        "Which reference should stay the same on every row?"
+        "Fill the formula down in your head: what does E2 become on row 3?",
+        "Lock the rate with $ so it stays at E2: $E$2."
       ],
-      "explanation": "Relative references (F1) shift when filled; absolute references ($F$1) don't. Use $ for single settings like a tax rate that every row should share.",
+      "explanation": "Relative references (E2) shift when filled; absolute references ($E$2) don't. Use $ for single settings like a tax rate that every row shares.",
       "skills": [
-        "absolute-refs"
+        "absolute-refs",
+        "debug-formulas"
       ],
-      "xp": 10,
+      "concepts": [
+        "XL.REF.ABSOLUTE"
+      ],
+      "xp": 20,
+      "phase": "practice",
+      "consequence": "scales"
+    },
+    {
+      "id": "profit-fix",
+      "type": "repair",
+      "title": "The impossible losses",
+      "mechanic": "Repair Mission",
+      "speaker": "tove",
+      "context": "My profit column says I lose 83 silver on furs. Profit should be (price − cost) × quantity. Someone wrote =B2-C2*D2.",
+      "prompt": "Diagnose the bug and repair E2 (filled down to E5).",
+      "columns": [
+        "Item",
+        "Price",
+        "Cost",
+        "Qty",
+        "Profit"
+      ],
+      "rows": [
+        [
+          "Furs",
+          25,
+          18,
+          6,
+          null
+        ],
+        [
+          "Honey",
+          8,
+          5,
+          15,
+          null
+        ],
+        [
+          "Amber",
+          40,
+          28,
+          3,
+          null
+        ],
+        [
+          "Rope",
+          5,
+          2,
+          22,
+          null
+        ]
+      ],
+      "target": "E2",
+      "fillDownTo": "E5",
+      "expected": {
+        "E2": 42,
+        "E3": 45,
+        "E4": 36,
+        "E5": 66
+      },
+      "broken": "=B2-C2*D2",
+      "diagnoses": [
+        {
+          "id": "order",
+          "text": "Excel multiplies before it subtracts, so it did 25 − (18 × 6)",
+          "feedback": "Exactly: * and / come before + and −."
+        },
+        {
+          "id": "refs",
+          "text": "The cell references point at the wrong columns",
+          "feedback": "B, C and D are the right cells. The order Excel works in is the problem."
+        },
+        {
+          "id": "absolute",
+          "text": "It needs $ signs",
+          "feedback": "Each row should use its own price and cost, so no $ is needed here."
+        },
+        {
+          "id": "data",
+          "text": "The cost data is wrong",
+          "feedback": "The data is fine. The same numbers give a sensible profit when the formula is right."
+        }
+      ],
+      "correctDiagnosis": "order",
+      "solution": "=(B2-C2)*D2",
+      "check": {
+        "rows": [
+          [
+            "Furs",
+            30,
+            20,
+            2,
+            null
+          ],
+          [
+            "Honey",
+            10,
+            6,
+            5,
+            null
+          ],
+          [
+            "Amber",
+            50,
+            35,
+            1,
+            null
+          ],
+          [
+            "Rope",
+            6,
+            3,
+            10,
+            null
+          ]
+        ],
+        "expected": {
+          "E2": 20,
+          "E3": 20,
+          "E4": 15,
+          "E5": 30
+        }
+      },
+      "successFeedback": "Profits are back: 42, 45, 36 and 66.",
+      "hints": [
+        "Which happens first in Excel, − or *?",
+        "Brackets make the subtraction happen first: (B2-C2)*D2."
+      ],
+      "explanation": "Excel does * and / before + and −. Brackets change the order: =(B2-C2)*D2 subtracts first, then multiplies.",
+      "skills": [
+        "debug-formulas",
+        "write-formulas"
+      ],
+      "concepts": [
+        "XL.OPS.PRECEDENCE",
+        "XL.OPS.ARITH"
+      ],
+      "xp": 20,
+      "phase": "practice",
+      "consequence": "coins"
+    },
+    {
+      "id": "error-runes",
+      "type": "match",
+      "title": "The cursed runes",
+      "mechanic": "Rune match",
+      "speaker": "tove",
+      "context": "These cursed runes appeared in my old ledger. Each one is Excel telling you something specific.",
+      "prompt": "Match each error rune to what caused it.",
+      "left": [
+        {
+          "id": "div0",
+          "text": "#DIV/0!",
+          "code": true
+        },
+        {
+          "id": "name",
+          "text": "#NAME?",
+          "code": true
+        },
+        {
+          "id": "value",
+          "text": "#VALUE!",
+          "code": true
+        },
+        {
+          "id": "ref",
+          "text": "#REF!",
+          "code": true
+        }
+      ],
+      "right": [
+        {
+          "id": "zero",
+          "text": "Dividing by zero or an empty cell"
+        },
+        {
+          "id": "spell",
+          "text": "A misspelled function, like =SUMM(D2:D5)"
+        },
+        {
+          "id": "text",
+          "text": "Arithmetic on text, like =A2*2 when A2 says Furs"
+        },
+        {
+          "id": "deleted",
+          "text": "A reference to cells that were deleted"
+        }
+      ],
+      "pairs": {
+        "div0": "zero",
+        "name": "spell",
+        "value": "text",
+        "ref": "deleted"
+      },
+      "feedback": {
+        "div0": "#DIV/0! is about division: something divided by 0 or by an empty cell.",
+        "name": "#NAME? means Excel doesn't recognise a word — usually a typo in a function name.",
+        "value": "#VALUE! appears when a calculation is fed text instead of a number.",
+        "ref": "#REF! means a reference no longer points anywhere, often after deleting rows or columns."
+      },
+      "successFeedback": "The curse is lifted: you can read Excel's error runes.",
+      "hints": [
+        "Read each error's name literally.",
+        "#NAME? is about names Excel doesn't recognise; #REF! is about references."
+      ],
+      "explanation": "Errors are messages, not failures: each names the kind of problem, so you know where to look.",
+      "skills": [
+        "debug-formulas"
+      ],
+      "concepts": [
+        "XL.ERR.TYPES"
+      ],
+      "xp": 15,
+      "phase": "practice"
+    },
+    {
+      "id": "rune-wheel",
+      "type": "wheel",
+      "title": "The rune wheel",
+      "mechanic": "Rune Wheel",
+      "speaker": "tove",
+      "context": "Sailors spin this wheel for luck. Here it tests memory: it lands on a rune you've already learned — in a new place on the island. Stake silver if you're confident — it never changes your XP or medal.",
+      "prompt": "Spin the wheel, then solve the challenge it lands on.",
+      "wager": true,
+      "segments": [
+        {
+          "id": "wages",
+          "label": "Σ SUM",
+          "concepts": [
+            "XL.FN.SUM"
+          ],
+          "challenge": {
+            "kind": "formula",
+            "prompt": "The crew's weekly wages are in B2:B5. Build the total in B6.",
+            "columns": [
+              "Crew",
+              "Wage"
+            ],
+            "rows": [
+              [
+                "Bjorn",
+                12
+              ],
+              [
+                "Freya",
+                15
+              ],
+              [
+                "Leif",
+                9
+              ],
+              [
+                "Sigrun",
+                14
+              ],
+              [
+                "Total",
+                null
+              ]
+            ],
+            "target": "B6",
+            "expected": {
+              "B6": 50
+            },
+            "requireFunctions": [
+              "SUM"
+            ],
+            "solution": "=SUM(B2:B5)"
+          },
+          "hints": [
+            "A total of a range is a job for SUM.",
+            "=SUM(B2:B5)"
+          ],
+          "explanation": "SUM works the same on wages as on revenue: a range in, one total out."
+        },
+        {
+          "id": "catch",
+          "label": "x̄ AVERAGE",
+          "concepts": [
+            "XL.FN.AVERAGE"
+          ],
+          "challenge": {
+            "kind": "formula",
+            "prompt": "Sigrun's daily fish catch is in B2:B5. Build the typical daily catch in B6.",
+            "columns": [
+              "Day",
+              "Fish"
+            ],
+            "rows": [
+              [
+                "Mon",
+                12
+              ],
+              [
+                "Tue",
+                8
+              ],
+              [
+                "Wed",
+                10
+              ],
+              [
+                "Thu",
+                6
+              ],
+              [
+                "Average",
+                null
+              ]
+            ],
+            "target": "B6",
+            "expected": {
+              "B6": 9
+            },
+            "requireFunctions": [
+              "AVERAGE"
+            ],
+            "solution": "=AVERAGE(B2:B5)"
+          },
+          "hints": [
+            "'Typical' here means the mean.",
+            "=AVERAGE(B2:B5)"
+          ],
+          "explanation": "AVERAGE gives the typical value of a range — fish, prices or anything else."
+        },
+        {
+          "id": "crates",
+          "label": "▲ MAX",
+          "concepts": [
+            "XL.FN.MINMAX"
+          ],
+          "challenge": {
+            "kind": "formula",
+            "prompt": "Crate weights for the longship are in B2:B7. The heaviest crate goes in the hold first: build its weight in B8.",
+            "columns": [
+              "Crate",
+              "Weight"
+            ],
+            "rows": [
+              [
+                "Salt",
+                12
+              ],
+              [
+                "Iron",
+                30
+              ],
+              [
+                "Grain",
+                18
+              ],
+              [
+                "Timber",
+                27
+              ],
+              [
+                "Wool",
+                9
+              ],
+              [
+                "Ale",
+                22
+              ],
+              [
+                "Heaviest",
+                null
+              ]
+            ],
+            "target": "B8",
+            "expected": {
+              "B8": 30
+            },
+            "requireFunctions": [
+              "MAX"
+            ],
+            "solution": "=MAX(B2:B7)"
+          },
+          "hints": [
+            "Heaviest means largest.",
+            "=MAX(B2:B7) — the rune you uncovered on the stone."
+          ],
+          "explanation": "MAX finds the largest value whether it's a price or a weight."
+        },
+        {
+          "id": "exchange",
+          "label": "$ LOCK",
+          "concepts": [
+            "XL.REF.ABSOLUTE"
+          ],
+          "challenge": {
+            "kind": "formula",
+            "prompt": "A Frankish trader pays in his own coin. The exchange rate is in E2. Build C2 so it still works when filled down to C4.",
+            "columns": [
+              "Item",
+              "Price",
+              "In Frankish coin",
+              "Setting",
+              "Value"
+            ],
+            "rows": [
+              [
+                "Furs",
+                25,
+                null,
+                "Rate",
+                2
+              ],
+              [
+                "Honey",
+                8,
+                null,
+                null,
+                null
+              ],
+              [
+                "Amber",
+                40,
+                null,
+                null,
+                null
+              ]
+            ],
+            "target": "C2",
+            "fillDownTo": "C4",
+            "expected": {
+              "C2": 50,
+              "C3": 16,
+              "C4": 80
+            },
+            "solution": "=B2*$E$2",
+            "requireRefs": [
+              "E2"
+            ]
+          },
+          "hints": [
+            "Which reference must stay put when the formula is filled down?",
+            "Lock the rate: =B2*$E$2."
+          ],
+          "explanation": "Lock single settings with $; leave the row's own values relative."
+        },
+        {
+          "id": "order",
+          "label": "( ) ORDER",
+          "concepts": [
+            "XL.OPS.PRECEDENCE"
+          ],
+          "challenge": {
+            "kind": "formula",
+            "prompt": "Tobin bets that =A2+B2*C2 makes 36. Excel says 16. Build D2 so that 10 plus 2, times 3, really makes 36.",
+            "columns": [
+              "Base",
+              "Extra",
+              "Times",
+              "Result"
+            ],
+            "rows": [
+              [
+                10,
+                2,
+                3,
+                null
+              ]
+            ],
+            "target": "D2",
+            "expected": {
+              "D2": 36
+            },
+            "solution": "=(A2+B2)*C2"
+          },
+          "hints": [
+            "Excel multiplies before it adds, so the addition needs brackets.",
+            "=(A2+B2)*C2"
+          ],
+          "explanation": "* and / come before + and −; use brackets when you mean otherwise."
+        },
+        {
+          "id": "address",
+          "label": "⌖ CELL",
+          "concepts": [
+            "XL.CELL.ADDRESS"
+          ],
+          "challenge": {
+            "kind": "spot",
+            "prompt": "The harbour master needs the Gull's cargo. Select that cell, or type its address in the name box.",
+            "columns": [
+              "Ship",
+              "Crew",
+              "Cargo"
+            ],
+            "rows": [
+              [
+                "Raven",
+                12,
+                40
+              ],
+              [
+                "Wolf",
+                9,
+                65
+              ],
+              [
+                "Gull",
+                15,
+                30
+              ]
+            ],
+            "select": "cell",
+            "answer": [
+              "C4"
+            ],
+            "feedback": {
+              "B4": "B4 is the Gull's crew. Cargo is column C.",
+              "C3": "C3 is the Wolf's cargo. The Gull is one row down.",
+              "A4": "A4 is the ship's name. Its cargo is two columns to the right."
+            },
+            "successFeedback": "C4: column C is Cargo, row 4 is the Gull."
+          },
+          "hints": [
+            "Column letter first, then row number.",
+            "Cargo is column C; the Gull is on row 4."
+          ],
+          "explanation": "Addresses work the same on every sheet: column letter, then row number."
+        }
+      ],
+      "hints": [
+        "Read the challenge the wheel landed on carefully."
+      ],
+      "explanation": "Recall in a new setting is how skills stick.",
+      "skills": [
+        "use-ranges"
+      ],
+      "xp": 15,
+      "phase": "practice"
+    },
+    {
+      "id": "restock",
+      "type": "gambit",
+      "title": "The restock gamble",
+      "mechanic": "Trader's Gambit",
+      "speaker": "tove",
+      "context": "The supply ship is in. I have 200 silver. Whatever I order, I pay for — but I can only sell as many as customers want (the Demand column). MIN(D2,E2) picks the smaller of demand and order.",
+      "prompt": "Write the profit formula for F2 (filled down), then set the orders. Tove needs at least 165 silver profit without overspending.",
+      "items": [
+        {
+          "name": "Furs",
+          "price": 25,
+          "cost": 15,
+          "demand": 6
+        },
+        {
+          "name": "Honey",
+          "price": 8,
+          "cost": 4,
+          "demand": 15
+        },
+        {
+          "name": "Amber",
+          "price": 40,
+          "cost": 30,
+          "demand": 3
+        },
+        {
+          "name": "Rope",
+          "price": 5,
+          "cost": 2,
+          "demand": 22
+        }
+      ],
+      "purse": 200,
+      "targetProfit": 165,
+      "maxOrder": 30,
+      "solution": {
+        "orders": [
+          6,
+          15,
+          0,
+          22
+        ],
+        "formula": "=B2*MIN(D2,E2)-C2*E2"
+      },
+      "wager": true,
+      "successFeedback": "The ship sails off and the chest is heavier.",
+      "hints": [
+        "Profit = what you earn from sales − what you paid. Sales are capped by demand: MIN(D2,E2) units.",
+        "=B2*MIN(D2,E2)-C2*E2. Then compare how much profit each item makes per silver spent."
+      ],
+      "explanation": "A good model separates what you sell (price × MIN(demand, order)) from what you pay (cost × order). Over-ordering never earns more — it only adds cost.",
+      "skills": [
+        "write-formulas",
+        "decide-with-data"
+      ],
+      "concepts": [
+        "XL.KPI.MARGIN",
+        "XL.FN.MINMAX",
+        "XL.OPS.ARITH"
+      ],
+      "xp": 25,
+      "phase": "practice",
+      "consequence": "crates"
+    },
+    {
+      "id": "explain-restock",
+      "title": "Why the rope rotted",
+      "mechanic": "Evidence hunt",
+      "speaker": "tove",
+      "context": "Last season I ordered 30 coils of rope at 2 silver each and sold them at 5. I made 50 silver. Ordering exactly what sold would have made 66.",
+      "hints": [
+        "66 − 50 = 16 silver went somewhere. What did Tove pay for but never sell?",
+        "Unsold coils still cost 2 silver each: 8 × 2 = 16."
+      ],
+      "explanation": "Numbers become decisions when you can say what they mean: unsold stock is pure cost.",
+      "skills": [
+        "decide-with-data"
+      ],
+      "concepts": [
+        "XL.KPI.MARGIN"
+      ],
+      "xp": 15,
+      "phase": "practice",
+      "type": "spot",
+      "prompt": "Where did the other 16 silver go? Select the number in the ledger that explains it.",
+      "columns": [
+        "Item",
+        "Ordered",
+        "Sold",
+        "Unsold",
+        "Price",
+        "Cost each"
+      ],
+      "rows": [
+        [
+          "Honey",
+          15,
+          15,
+          0,
+          8,
+          3
+        ],
+        [
+          "Rope",
+          30,
+          22,
+          8,
+          5,
+          2
+        ],
+        [
+          "Amber",
+          3,
+          3,
+          0,
+          40,
+          30
+        ]
+      ],
+      "select": "cell",
+      "answer": [
+        "D3"
+      ],
+      "feedback": {
+        "F3": "2 silver is what each coil cost. Which number, times 2, makes the missing 16?",
+        "C3": "22 coils sold for 110: that's the income, and it's the same either way.",
+        "B3": "30 coils ordered. Part of that order is the problem, but which part?",
+        "E3": "The price earns money on coils that sold. The loss is on coils that didn't.",
+        "D2": "Honey sold everything it ordered: nothing was wasted there.",
+        "D4": "Amber sold everything it ordered: nothing was wasted there."
+      },
+      "successFeedback": "D3: 8 coils never sold, and each cost 2 silver: 8 × 2 = 16 silver paid for nothing.",
+      "consequence": "crates"
+    },
+    {
+      "id": "audit-arrives",
+      "type": "dialogue",
+      "title": "Sundown: the audit",
+      "speaker": "hrolf",
+      "lines": [
+        "So. You are the Pathfinder who has been 'fixing' this ledger.",
+        "I bring my own figures. I check every formula, and I don't give hints for free.",
+        "Pass my audit and the Jarl's Great Hall opens to you. Fail, and you can try again — but my numbers will change."
+      ],
+      "action": "Face the audit"
+    },
+    {
+      "id": "audit-revenue",
+      "type": "workshop",
+      "title": "Audit I: Hrolf's figures",
+      "mechanic": "Ledger Workshop · boss",
+      "speaker": "hrolf",
+      "context": "My ledger puts quantity before price. Revenue for every row, from one formula.",
+      "prompt": "Build the revenue formula in D2. It is filled down to D5.",
+      "columns": [
+        "Item",
+        "Qty",
+        "Price",
+        "Revenue"
+      ],
+      "rows": [
+        [
+          "Furs",
+          6,
+          25,
+          null
+        ],
+        [
+          "Honey",
+          15,
+          8,
+          null
+        ],
+        [
+          "Amber",
+          3,
+          40,
+          null
+        ],
+        [
+          "Rope",
+          22,
+          5,
+          null
+        ]
+      ],
+      "target": "D2",
+      "fillDownTo": "D5",
+      "expected": {
+        "D2": 150,
+        "D3": 120,
+        "D4": 120,
+        "D5": 110
+      },
+      "variants": [
+        {
+          "rows": [
+            [
+              "Furs",
+              4,
+              25,
+              null
+            ],
+            [
+              "Honey",
+              20,
+              8,
+              null
+            ],
+            [
+              "Amber",
+              5,
+              40,
+              null
+            ],
+            [
+              "Rope",
+              30,
+              5,
+              null
+            ]
+          ],
+          "expected": {
+            "D2": 100,
+            "D3": 160,
+            "D4": 200,
+            "D5": 150
+          }
+        },
+        {
+          "rows": [
+            [
+              "Furs",
+              7,
+              30,
+              null
+            ],
+            [
+              "Honey",
+              12,
+              9,
+              null
+            ],
+            [
+              "Amber",
+              2,
+              45,
+              null
+            ],
+            [
+              "Rope",
+              18,
+              6,
+              null
+            ]
+          ],
+          "expected": {
+            "D2": 210,
+            "D3": 108,
+            "D4": 90,
+            "D5": 108
+          }
+        }
+      ],
+      "solution": "=B2*C2",
+      "tokens": [
+        "=",
+        "B2",
+        "C2",
+        "D2",
+        "*",
+        "+",
+        "-",
+        "$B$2",
+        "$C$2",
+        "SUM(",
+        ")"
+      ],
+      "consequence": "scales",
+      "boss": true,
+      "hints": [
+        "Same idea as before, columns in a different order.",
+        "Quantity × price, using this row's cells."
+      ],
+      "explanation": "Formulas follow the meaning of the columns, not their position — read the headers first.",
+      "skills": [
+        "write-formulas"
+      ],
+      "concepts": [
+        "XL.REF.RELATIVE",
+        "XL.FORMULA.ENTRY"
+      ],
+      "xp": 20,
       "phase": "assessment"
+    },
+    {
+      "id": "audit-tax",
+      "type": "repair",
+      "title": "Audit II: the short tax",
+      "mechanic": "Repair Mission · boss",
+      "speaker": "hrolf",
+      "context": "Your total tax is short. I count the tax on all four items. The rate is in D2.",
+      "prompt": "Diagnose the fault in B6 and repair it.",
+      "columns": [
+        "Item",
+        "Revenue",
+        "Setting",
+        "Value"
+      ],
+      "rows": [
+        [
+          "Furs",
+          150,
+          "Tax rate",
+          0.1
+        ],
+        [
+          "Honey",
+          120,
+          null,
+          null
+        ],
+        [
+          "Amber",
+          120,
+          null,
+          null
+        ],
+        [
+          "Rope",
+          110,
+          null,
+          null
+        ],
+        [
+          "Total tax",
+          null,
+          null,
+          null
+        ]
+      ],
+      "target": "B6",
+      "expected": {
+        "B6": 50
+      },
+      "variants": [
+        {
+          "rows": [
+            [
+              "Furs",
+              100,
+              "Tax rate",
+              0.1
+            ],
+            [
+              "Honey",
+              160,
+              null,
+              null
+            ],
+            [
+              "Amber",
+              200,
+              null,
+              null
+            ],
+            [
+              "Rope",
+              150,
+              null,
+              null
+            ],
+            [
+              "Total tax",
+              null,
+              null,
+              null
+            ]
+          ],
+          "expected": {
+            "B6": 61
+          }
+        },
+        {
+          "rows": [
+            [
+              "Furs",
+              210,
+              "Tax rate",
+              0.2
+            ],
+            [
+              "Honey",
+              108,
+              null,
+              null
+            ],
+            [
+              "Amber",
+              90,
+              null,
+              null
+            ],
+            [
+              "Rope",
+              108,
+              null,
+              null
+            ],
+            [
+              "Total tax",
+              null,
+              null,
+              null
+            ]
+          ],
+          "expected": {
+            "B6": 103.2
+          }
+        }
+      ],
+      "broken": "=SUM(B2:B4)*D2",
+      "diagnoses": [
+        {
+          "id": "range",
+          "text": "The range stops at B4, so Rope is left out",
+          "feedback": "Yes: B2:B4 covers three items, not four."
+        },
+        {
+          "id": "drift",
+          "text": "D2 needs $ signs",
+          "feedback": "This formula isn't filled anywhere, so D2 can't drift. Count the rows in the range."
+        },
+        {
+          "id": "order",
+          "text": "Excel multiplies before it adds",
+          "feedback": "SUM( ) is worked out first anyway. Look at which rows the range includes."
+        },
+        {
+          "id": "rate",
+          "text": "The tax rate is wrong",
+          "feedback": "The rate is fine; the total it's applied to is too small."
+        }
+      ],
+      "correctDiagnosis": "range",
+      "solution": "=SUM(B2:B5)*D2",
+      "requireFunctions": [
+        "SUM"
+      ],
+      "check": {
+        "rows": [
+          [
+            "Furs",
+            100,
+            "Tax rate",
+            0.2
+          ],
+          [
+            "Honey",
+            200,
+            null,
+            null
+          ],
+          [
+            "Amber",
+            50,
+            null,
+            null
+          ],
+          [
+            "Rope",
+            150,
+            null,
+            null
+          ],
+          [
+            "Total tax",
+            null,
+            null,
+            null
+          ]
+        ],
+        "expected": {
+          "B6": 100
+        }
+      },
+      "boss": true,
+      "hints": [
+        "How many items does B2:B4 cover?",
+        "The range must run to the last item, B5."
+      ],
+      "explanation": "A range that stops one row short is the most common SUM bug. Check the first and last cell every time.",
+      "skills": [
+        "debug-formulas",
+        "use-ranges"
+      ],
+      "concepts": [
+        "XL.FN.SUM"
+      ],
+      "xp": 20,
+      "phase": "assessment",
+      "consequence": "scales"
+    },
+    {
+      "id": "audit-discrepancy",
+      "title": "Audit III: the missing coins",
+      "mechanic": "Mystery investigation · boss",
+      "speaker": "hrolf",
+      "context": "My men counted the coins for each item. One item's coins don't match what the ledger says it sold. Find it.",
+      "hints": [
+        "Expected coins = Price × Qty sold, row by row: =B2*C2.",
+        "Compare each Coins counted cell with your Expected column on the same row."
+      ],
+      "explanation": "Reconciling expected against actual, row by row, is how real audits find missing money.",
+      "skills": [
+        "write-formulas",
+        "decide-with-data"
+      ],
+      "concepts": [
+        "XL.OPS.ARITH",
+        "XL.REF.RELATIVE"
+      ],
+      "xp": 20,
+      "phase": "assessment",
+      "boss": true,
+      "type": "spot",
+      "prompt": "Build the expected coins for each item in E2 (it fills down), then select the count that doesn't match.",
+      "columns": [
+        "Item",
+        "Price",
+        "Qty sold",
+        "Coins counted"
+      ],
+      "rows": [
+        [
+          "Furs",
+          25,
+          6,
+          150
+        ],
+        [
+          "Honey",
+          8,
+          15,
+          120
+        ],
+        [
+          "Amber",
+          40,
+          3,
+          80
+        ],
+        [
+          "Rope",
+          5,
+          22,
+          110
+        ]
+      ],
+      "select": "cell",
+      "answer": [
+        "D4"
+      ],
+      "variants": [
+        {
+          "rows": [
+            [
+              "Furs",
+              25,
+              4,
+              100
+            ],
+            [
+              "Honey",
+              8,
+              20,
+              140
+            ],
+            [
+              "Amber",
+              40,
+              5,
+              200
+            ],
+            [
+              "Rope",
+              5,
+              30,
+              150
+            ]
+          ],
+          "answer": [
+            "D3"
+          ]
+        },
+        {
+          "rows": [
+            [
+              "Furs",
+              30,
+              7,
+              210
+            ],
+            [
+              "Honey",
+              9,
+              12,
+              108
+            ],
+            [
+              "Amber",
+              45,
+              2,
+              90
+            ],
+            [
+              "Rope",
+              6,
+              18,
+              96
+            ]
+          ],
+          "answer": [
+            "D5"
+          ]
+        }
+      ],
+      "scratch": {
+        "label": "Expected",
+        "solutions": [
+          "=B2*C2",
+          "=D2-B2*C2",
+          "=B2*C2-D2"
+        ]
+      },
+      "successFeedback": "Your working proves it: that count is short. Hrolf's men recount it, and you were right.",
+      "consequence": "coins"
+    },
+    {
+      "id": "audit-rune",
+      "type": "runeword",
+      "title": "Audit IV: Hrolf's riddle",
+      "mechanic": "Rune-word · boss",
+      "speaker": "hrolf",
+      "context": "Answer my riddle. Real function names only.",
+      "prompt": "Name the function.",
+      "clue": "Not the total, not the greatest: I want the typical price — add them up and share them out evenly.",
+      "word": "AVERAGE",
+      "maxGuesses": 6,
+      "par": 3,
+      "boss": true,
+      "hints": [
+        "Seven letters.",
+        "It begins with A."
+      ],
+      "explanation": "AVERAGE = SUM ÷ COUNT: the typical value of a range.",
+      "skills": [
+        "use-ranges"
+      ],
+      "concepts": [
+        "XL.FN.AVERAGE"
+      ],
+      "xp": 20,
+      "phase": "assessment",
+      "bossWeight": 0.5
+    },
+    {
+      "id": "audit-verdict",
+      "title": "Audit V: the verdict",
+      "mechanic": "Explain the outcome · boss",
+      "speaker": "hrolf",
+      "context": "Next season the Jarl allows only three goods per stall. Here is what each earned and what its stock cost.",
+      "hints": [
+        "Profit = Revenue − Stock cost: =B2-C2.",
+        "Drop the good with the smallest profit in your column, not the smallest revenue."
+      ],
+      "explanation": "Decide on profit, not revenue: a good that sells a lot can still earn the least.",
+      "skills": [
+        "decide-with-data"
+      ],
+      "concepts": [
+        "XL.KPI.MARGIN"
+      ],
+      "xp": 20,
+      "phase": "assessment",
+      "boss": true,
+      "type": "spot",
+      "prompt": "Work out each good's profit in D2 (it fills down), then select the row of the good Tove should drop.",
+      "columns": [
+        "Item",
+        "Revenue",
+        "Stock cost"
+      ],
+      "rows": [
+        [
+          "Furs",
+          150,
+          90
+        ],
+        [
+          "Honey",
+          120,
+          60
+        ],
+        [
+          "Amber",
+          120,
+          90
+        ],
+        [
+          "Rope",
+          110,
+          44
+        ]
+      ],
+      "select": "row",
+      "answer": [
+        "A4"
+      ],
+      "variants": [
+        {
+          "rows": [
+            [
+              "Furs",
+              150,
+              130
+            ],
+            [
+              "Honey",
+              120,
+              60
+            ],
+            [
+              "Amber",
+              160,
+              90
+            ],
+            [
+              "Rope",
+              110,
+              44
+            ]
+          ],
+          "answer": [
+            "A2"
+          ]
+        },
+        {
+          "rows": [
+            [
+              "Furs",
+              150,
+              90
+            ],
+            [
+              "Honey",
+              120,
+              70
+            ],
+            [
+              "Amber",
+              160,
+              110
+            ],
+            [
+              "Rope",
+              66,
+              50
+            ]
+          ],
+          "answer": [
+            "A5"
+          ]
+        }
+      ],
+      "scratch": {
+        "label": "Profit",
+        "solutions": [
+          "=B2-C2"
+        ]
+      },
+      "successFeedback": "The lowest profit, as your working shows. Hrolf nods and stamps the ledger.",
+      "consequence": "crates"
     },
     {
       "id": "ending",
       "type": "ending",
-      "title": "The books balance",
+      "title": "The audit is passed",
       "speaker": "tove",
       "lines": [
-        "500 for the week! And if I fix a sale, every number updates by itself.",
-        "No more guessing. The spreadsheet does the sums and I check they make sense.",
-        "The steward in the Great Hall wants a proper dashboard. You're ready for it."
+        "Hrolf left without a word — which means the books balance!",
+        "Every number in this ledger updates itself now, and I know how to check it.",
+        "The Jarl's steward wants someone who can read numbers like that. The Great Hall is waiting."
       ],
-      "action": "See what you learned"
+      "action": "See your results",
+      "ifNotMastered": {
+        "title": "The audit isn't passed yet",
+        "lines": [
+          "Hrolf snaps the ledger shut. The audit didn't reach the pass mark, so the Great Hall stays closed for now.",
+          "Your work still counts. Practise the rounds you found hard, then try again: he'll bring different figures next time."
+        ]
+      }
     }
   ]
 }

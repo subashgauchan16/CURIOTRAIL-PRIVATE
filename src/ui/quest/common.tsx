@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { ChallengeResult, ChallengeScene, Evidence, Outcome, Quest, Scene } from '../../engine/types';
-import { sceneXp } from '../../engine/game-engine';
+import { isFirstTry, sceneXp } from '../../engine/game-engine';
 
 export interface SceneProps<S extends Scene = Scene> {
   quest: Quest;
@@ -14,6 +14,10 @@ export interface SceneProps<S extends Scene = Scene> {
   onNext: () => void;
   onInspect: (id: string) => void;
   invalid: string | null;
+  /** Extra line shown with the result (e.g. how a silver stake settled). */
+  note?: ReactNode;
+  /** A practice replay: no XP is awarded, so none is shown. */
+  practice?: boolean;
 }
 
 const KIND_ICON: Record<string, string> = { source: '📜', ai: '🤖', message: '💬' };
@@ -72,9 +76,9 @@ export function CodeBlock({ code, label }: { code: string; label?: string }) {
 }
 
 /** Correct / retry / revealed feedback, grounded in the engine's outcome. */
-export function Feedback({ quest, scene, result, outcome, onReveal, onNext, revealedAnswer }: {
+export function Feedback({ quest, scene, result, outcome, onReveal, onNext, revealedAnswer, note }: {
   quest: Quest; scene: ChallengeScene; result: ChallengeResult; outcome: Outcome | null;
-  onReveal: () => void; onNext: () => void; revealedAnswer?: ReactNode;
+  onReveal: () => void; onNext: () => void; revealedAnswer?: ReactNode; note?: ReactNode;
 }) {
   if (result.solved) {
     const xp = sceneXp(quest, scene, result);
@@ -88,8 +92,9 @@ export function Feedback({ quest, scene, result, outcome, onReveal, onNext, reve
         {result.revealed ? (
           <p className="xp-note">No XP for this step, and your recap will show this skill as “reviewed with help”. You can replay later for the full reward.</p>
         ) : (
-          <p className="xp-note">+{xp} XP{result.attempts === 1 ? ' (includes first-try bonus)' : ` (solved on attempt ${result.attempts})`}</p>
+          <p className="xp-note">+{xp} XP{isFirstTry(scene, result) ? ' (includes first-try bonus)' : ` (solved on attempt ${result.attempts})`}</p>
         )}
+        {note && <p className="xp-note wager-note">{note}</p>}
         <Actions><button type="button" className="btn btn-primary btn-lg" onClick={onNext}>Continue</button></Actions>
       </div>
     );
@@ -98,6 +103,7 @@ export function Feedback({ quest, scene, result, outcome, onReveal, onNext, reve
   return (
     <div className="feedback feedback--retry" tabIndex={-1} data-feedback>
       <p className="feedback-title"><span aria-hidden="true">↻ </span>Not quite. Try again</p>
+      {note && <p className="xp-note wager-note">{note}</p>}
       <p>{outcome.feedback}</p>
       {outcome.output && <Output text={outcome.output} />}
       {outcome.issues && outcome.issues.length > 0 && (

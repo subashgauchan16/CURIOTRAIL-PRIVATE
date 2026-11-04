@@ -1,5 +1,13 @@
 {
   "schemaVersion": 1,
+  "recommendedOrder": [
+    "missing-signal",
+    "market-ledger",
+    "the-ledger",
+    "broken-tally",
+    "great-hall-dashboard",
+    "star-chart"
+  ],
   "destinations": [
     {
       "id": "signal-woods",
@@ -18,23 +26,6 @@
       "landmark": "The forest path below the lookout, on the island's northern rise."
     },
     {
-      "id": "viking-workshop",
-      "name": "The Viking Workshop",
-      "theme": "Python",
-      "icon": "🛠️",
-      "quests": [
-        "broken-tally"
-      ],
-      "unlockedBy": [
-        "missing-signal"
-      ],
-      "position": [
-        13,
-        7
-      ],
-      "landmark": "The timber workshop east of the village green."
-    },
-    {
       "id": "trading-market",
       "name": "The Trading Market",
       "theme": "Excel and spreadsheets",
@@ -50,6 +41,23 @@
         30
       ],
       "landmark": "The harbour market with three stalls and the ledger desk."
+    },
+    {
+      "id": "viking-workshop",
+      "name": "The Viking Workshop",
+      "theme": "Python",
+      "icon": "🛠️",
+      "quests": [
+        "broken-tally"
+      ],
+      "unlockedBy": [
+        "missing-signal"
+      ],
+      "position": [
+        13,
+        7
+      ],
+      "landmark": "The timber workshop east of the village green."
     },
     {
       "id": "great-hall",

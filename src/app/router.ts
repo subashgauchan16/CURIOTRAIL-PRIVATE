@@ -8,6 +8,7 @@ export type Route =
   | { name: 'map'; id: string | null }
   | { name: 'quest'; id: string }
   | { name: 'complete'; id: string }
+  | { name: 'practice'; id: string; scene: string }
   | { name: 'progress' }
   | { name: 'explore' };
 
@@ -21,6 +22,7 @@ export function parseHash(hash: string): Route {
   if ((m = path.match(/^\/map(?:\/([a-z0-9-]+))?$/))) return { name: 'map', id: m[1] ?? null };
   if ((m = path.match(/^\/quest\/([a-z0-9-]+)$/))) return { name: 'quest', id: m[1] };
   if ((m = path.match(/^\/complete\/([a-z0-9-]+)$/))) return { name: 'complete', id: m[1] };
+  if ((m = path.match(/^\/practice\/([a-z0-9-]+)\/([a-z0-9-]+)$/))) return { name: 'practice', id: m[1], scene: m[2] };
   return { name: 'home' };
 }
 
