@@ -7,7 +7,7 @@ CurioTrail is a free, story-driven 3D learning game by SG. You become a *Pathfin
 > **Status:** playable prototype. Six quests are complete from start to finish, including a hands-on data-modelling lab, each with theory cards. They're organised into an eight-module learning path; modules with no content yet are clearly marked *planned*. No unfinished feature is presented as working.
 > "CurioTrail" is a working name. Trademarks and domains have not been checked.
 
-**Play:** https://denilthaks.github.io/CURIO/ (once `main` is deployed; see [Deploy](#deploy)).
+**Play:** https://subashgauchan16.github.io/CURIOTRAIL-PRIVATE/ (once `main` is deployed; see [Deploy](#deploy)).
 
 ![The 3D map](docs/screenshots/11-map-3d.jpg)
 
