@@ -64,3 +64,26 @@ For each pull request after `mit-final`, record in its description:
 - any outside sources, assets or code used, and their licences.
 
 Outside contributions shouldn't be accepted until a contributor agreement has been decided.
+
+## 6. Material integrated from the CURIO repository
+
+On 2026-11-04 the branch `feature/curio-feature-integration` brought in material from `https://github.com/subashgauchan16/CURIO` at commit `f9e03e22679e905c2615c770f196394b902dcfd6` (`main`). The CURIO repository wasn't changed. The file-by-file record is in `docs/CURIO-INTEGRATION.md`.
+
+| Type | Files |
+|---|---|
+| New here, copied from CURIO | `src/engine/games/*`, `src/engine/learning-analytics.ts`, `src/ui/games/*`, `src/ui/profile/Profile.tsx`, `src/ui/screens/PracticeScreen.tsx`, `src/styles/games.css`, `src/styles/profile.css`, `src/world/market.ts`, `public/data/codex.json`, `docs/GAME-FIRST-SLICE.md`, and the tests named there |
+| Inherited files changed to CURIO's later version, then adapted | `src/engine/` (`game-engine`, `progression`, `progress-store`, `types`, `excel-lite`, `quest-validation`), `public/data/quests/market-ledger.json`, the screens and world files listed in that record |
+
+**Verified from the CURIO git history:**
+- This material was written after `mit-final`, in commits dated 2026-10-28 and 2026-10-29 (from `5dde7a5` to `336d05e`, merged by pull requests including #6 and #7). The commits sampled carry a `Co-Authored-By: Claude Opus 5.5` trailer, and some record "Claude" as author, so section 4 applies to them too.
+- The `LICENSE` file at those commits is still the MIT text. CURIO's `LICENSE` changed to a proprietary notice in `9a2a869`, dated 2026-10-31.
+- CURIO's current licence names "Curiotrail" as the copyright holder; this repository's names SG · CurioTrail.
+
+**Not established:**
+- The dates these commits became publicly visible on CURIO's `main` (git records commit dates, not push dates).
+- The origin and terms of the "Excel Encyclopedia (14 volumes, 2026)" cited by `public/data/codex.json` and by the function list in `src/engine/games/function-names.ts`. The codex holds short summaries with volume and chapter references.
+
+**For review:**
+1. `docs/LICENSING-HISTORY.md` treats `mit-final` as the last publicly distributed state. The CURIO commits above suggest that may no longer be complete. That document hasn't been changed.
+2. Category C above says new work hasn't been published. That doesn't apply to the material in this section, which is public in CURIO.
+3. Whether the Encyclopedia can be referenced in shipped content, and who owns it.
