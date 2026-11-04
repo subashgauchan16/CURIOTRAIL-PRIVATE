@@ -12,6 +12,7 @@ import { PALETTE, createClouds, createSky, createSparkles, createWater, setWater
 import { createCharacter, type Character, type Pose } from './characters';
 import type { CharacterModel } from './character-model';
 import { ExploreRuntime, type ExploreView } from './explore-runtime';
+import { loadStreamedIsland, type StreamedIsland } from './streamed-island';
 
 import type { Quality } from './capabilities';
 
@@ -50,6 +51,8 @@ export interface WorldOptions {
   islandFiles?: { low: string; high?: string };
   /** World units per island-A block: 1 for the original island, 0.25 for the metre-scale island B. */
   scale?: number;
+  /** Streamed-tile manifest under modelBase (realistic island). When set, `islandFiles` is not used for drawing. */
+  streamed?: string;
   /** Scale of the procedural quest characters (they are about 1.8 units tall at scale 1). */
   characterScale?: number;
   onSelect?: (id: string) => void;
@@ -119,6 +122,9 @@ export class WorldRenderer {
   /** Player, persistent NPCs, input and the follow camera for free exploration. */
   readonly explore: ExploreRuntime;
   private borrowedNpc: string | null = null;
+  /** Distance-streamed tiles (realistic island only); null for the single-GLB islands A and B. */
+  private streamed: StreamedIsland | null = null;
+  private streamFocus = new THREE.Vector3();
 
   constructor(private canvas: HTMLCanvasElement, options: WorldOptions) {
     this.options = options;
@@ -130,7 +136,8 @@ export class WorldRenderer {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, high ? 2 : 1.25));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-    this.camera = new THREE.PerspectiveCamera(42, 1, s === 1 ? 1 : 0.05, 6000);
+    // life-size islands (B, and the streamed realistic island at island-A scale) need a close near plane for first person
+    this.camera = new THREE.PerspectiveCamera(42, 1, s === 1 && !options.streamed ? 1 : 0.05, 6000);
     this.camera.position.set(-330 * s, 300 * s, 470 * s);
 
     this.scene.fog = new THREE.Fog(PALETTE.fog, 900 * s, 3200 * s);
@@ -218,6 +225,7 @@ export class WorldRenderer {
     const base = this.options.modelBase;
     const files = this.options.islandFiles ?? { low: 'island-low.glb', high: 'island-high.glb' };
     const report = (state: LoadState) => { if (!this.disposed) this.options.onLoad?.(state); };
+    if (this.options.streamed) return this.loadStreamed(loader, report);
     try {
       report({ phase: 'loading', progress: 0, lod: 'none' });
       const low = await loader.loadAsync(`${base}${files.low}`, (e) => {
@@ -244,6 +252,49 @@ export class WorldRenderer {
     } catch (error) {
       report({ phase: 'error', progress: 0, lod: this.lod, error: error instanceof Error ? error.message : 'The island model could not be loaded.' });
     }
+  }
+
+  /** Realistic island: shared library + nearby tiles first, then distance streaming (see streamed-island.ts). */
+  private async loadStreamed(loader: GLTFLoader, report: (state: LoadState) => void) {
+    try {
+      report({ phase: 'loading', progress: 0, lod: 'none' });
+      const dir = this.options.streamed!.replace(/[^/]*$/, '');
+      const island = await loadStreamedIsland({
+        loader,
+        base: `${this.options.modelBase}${dir}`,
+        parent: this.island,
+        focus: this.controls.target.clone(),
+        onProgress: (p) => report({ phase: 'loading', progress: p, lod: 'none' }),
+        onTilesChanged: () => {
+          // new ground under markers and quest cameras; the camera itself is not moved
+          if (!this.streamed) return;
+          this.islandMeshes = this.streamed.proxies();
+          this.focusCache.clear();
+          this.refreshMarkerHeights();
+        },
+      });
+      if (this.disposed) { island.dispose(); return; }
+      this.streamed = island;
+      this.islandMeshes = island.proxies();
+      this.lod = 'high';
+      this.placeMarkers();
+      report({ phase: 'ready', progress: 1, lod: 'high' });
+    } catch (error) {
+      report({ phase: 'error', progress: 0, lod: this.lod, error: error instanceof Error ? error.message : 'The island could not be loaded.' });
+    }
+  }
+
+  /** Re-reads marker ground heights (streamed tiles arrived) without re-framing the camera. */
+  private refreshMarkerHeights() {
+    for (const d of this.destinations) {
+      const marker = this.markers.get(d.id);
+      if (!marker) continue;
+      const y = this.surfaceHeight(d.position[0], d.position[1]);
+      if (y === null || Math.abs(y - marker.ground.y) < 0.01) continue;
+      marker.ground.set(d.position[0], y, d.position[1]);
+      marker.group.position.copy(marker.ground);
+    }
+    if (this.character && (this.mode.kind === 'focus' || this.mode.kind === 'celebrate')) this.placeCharacter();
   }
 
   private setIsland(root: THREE.Object3D, lod: 'low' | 'high') {
@@ -711,6 +762,11 @@ export class WorldRenderer {
     }
     if (this.mode.kind !== 'explore') this.controls.update(delta);
     this.explore.update(delta, still);
+    if (this.streamed) {
+      const p = this.explore.isActive ? this.explore.state : null;
+      if (p) this.streamFocus.set(p.x, p.y, p.z); else this.streamFocus.copy(this.controls.target);
+      this.streamed.update(delta, still ? 0 : time, this.camera, this.streamFocus);
+    }
 
     if (!still) {
       this.water.update(time);
@@ -803,6 +859,7 @@ export class WorldRenderer {
       character: this.borrowedNpc ?? this.characterKey,
       mode: this.mode.kind,
       explore: this.explore.stats(),
+      streamed: this.streamed?.stats() ?? null,
     };
   }
 
@@ -817,6 +874,8 @@ export class WorldRenderer {
     this.disposeBurst();
     this.character?.dispose();
     this.explore.dispose();
+    this.streamed?.dispose();
+    this.streamed = null;
     for (const actor of this.actors) actor.dispose();
     this.actors.clear();
     this.environment.dispose();

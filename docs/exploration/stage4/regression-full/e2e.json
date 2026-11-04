@@ -1,0 +1,434 @@
+{
+  "date": "2026-11-04T17:39:45.546Z",
+  "base": "http://localhost:4321/CURIO/",
+  "browser": "Chromium (SwiftShader software WebGL)",
+  "passed": 35,
+  "failed": 0,
+  "results": [
+    {
+      "id": "A1",
+      "title": "Home screen loads from the /CURIO/ base path",
+      "status": "pass",
+      "ms": 10947
+    },
+    {
+      "id": "A14",
+      "title": "3D world renders genuine geometry attached to the island",
+      "status": "pass",
+      "ms": 10467
+    },
+    {
+      "id": "A2",
+      "title": "\"Start Your First Quest\" opens the identity step, then the real quest",
+      "status": "pass",
+      "ms": 10919
+    },
+    {
+      "id": "C",
+      "title": "Story introduction shows Mira (3D character + dialogue) and transitions to the investigation",
+      "status": "pass",
+      "ms": 10588
+    },
+    {
+      "id": "A3",
+      "title": "All three evidence items can be inspected; continue is gated until then",
+      "status": "pass",
+      "ms": 9280
+    },
+    {
+      "id": "L1",
+      "title": "A theory card appears before the first challenge, with every teaching section",
+      "status": "pass",
+      "ms": 8660
+    },
+    {
+      "id": "A4",
+      "title": "A wrong answer gives the feedback written for that answer, plus hint 1",
+      "status": "pass",
+      "ms": 7704
+    },
+    {
+      "id": "A5",
+      "title": "A correct answer gives the explanation from the quest data and XP",
+      "status": "pass",
+      "ms": 8647
+    },
+    {
+      "id": "A7",
+      "title": "Hints progress and the answer can be revealed after three tries (no XP)",
+      "status": "pass",
+      "ms": 13870
+    },
+    {
+      "id": "A10",
+      "title": "Refreshing the browser preserves progress mid-quest",
+      "status": "pass",
+      "ms": 5836
+    },
+    {
+      "id": "A6/F",
+      "title": "Prompt-writing challenge evaluates real choices",
+      "status": "pass",
+      "ms": 17508
+    },
+    {
+      "id": "A4b",
+      "title": "The final announcement lists every unsupported line",
+      "status": "pass",
+      "ms": 15953
+    },
+    {
+      "id": "A8/G",
+      "title": "Completion shows engine-calculated XP, level change, stars and skill statuses",
+      "status": "pass",
+      "ms": 10438
+    },
+    {
+      "id": "A9",
+      "title": "Completion unlocks only the appropriate content",
+      "status": "pass",
+      "ms": 11858
+    },
+    {
+      "id": "A11",
+      "title": "Replaying a quest never duplicates rewards",
+      "status": "pass",
+      "ms": 69569
+    },
+    {
+      "id": "P9-4",
+      "title": "Each destination can be selected from the island and opens its details",
+      "status": "pass",
+      "ms": 12334
+    },
+    {
+      "id": "P9-3",
+      "title": "The camera can inspect the island (drag, keyboard and buttons)",
+      "status": "pass",
+      "ms": 13258
+    },
+    {
+      "id": "P9-6a",
+      "title": "SQL quest runs real queries and evaluates them",
+      "status": "pass",
+      "ms": 28184
+    },
+    {
+      "id": "P9-6b",
+      "title": "Python quest reproduces the real error and evaluates expressions",
+      "status": "pass",
+      "ms": 34217
+    },
+    {
+      "id": "P9-6c",
+      "title": "Excel quest evaluates formulas, fill-down and functions",
+      "status": "pass",
+      "ms": 27099
+    },
+    {
+      "id": "P9-6d",
+      "title": "KPI dashboard: drag-and-drop and keyboard alternative, evaluated by the engine",
+      "status": "pass",
+      "ms": 18681
+    },
+    {
+      "id": "L2",
+      "title": "Modelling lab: build, get specific feedback, repair, and pass with real rules",
+      "status": "pass",
+      "ms": 30482
+    },
+    {
+      "id": "P9-7/8",
+      "title": "Rewards come from the engine and persist; destination states update after refresh",
+      "status": "pass",
+      "ms": 12756
+    },
+    {
+      "id": "A13/I",
+      "title": "Progress & settings: real data, text size, motion, graphics",
+      "status": "pass",
+      "ms": 22449
+    },
+    {
+      "id": "L3",
+      "title": "Learning path: eight modules from real data, planned modules clearly labelled",
+      "status": "pass",
+      "ms": 8471
+    },
+    {
+      "id": "A15a",
+      "title": "Graphics off: 2D fallback map, quests still playable",
+      "status": "pass",
+      "ms": 2666
+    },
+    {
+      "id": "A12",
+      "title": "Reset progress asks for confirmation and erases everything",
+      "status": "pass",
+      "ms": 4573
+    },
+    {
+      "id": "A13b",
+      "title": "Keyboard: skip link and answering a question without a mouse",
+      "status": "pass",
+      "ms": 11871
+    },
+    {
+      "id": "A15b",
+      "title": "Island model fails to load: clear error, retry, and quests still work",
+      "status": "pass",
+      "ms": 8626
+    },
+    {
+      "id": "A15c",
+      "title": "WebGL unavailable: 2D map and the first quest is fully playable",
+      "status": "pass",
+      "ms": 8344
+    },
+    {
+      "id": "L4",
+      "title": "A save from the previous release resumes on the right step after the lesson update",
+      "status": "pass",
+      "ms": 414
+    },
+    {
+      "id": "A16/H",
+      "title": "Mobile layout: home, map bottom sheet, quest panel; no sideways scroll; touch targets",
+      "status": "pass",
+      "ms": 27328
+    },
+    {
+      "id": "L5",
+      "title": "Mobile: theory card and modelling lab work with taps only (no dragging)",
+      "status": "pass",
+      "ms": 14268
+    },
+    {
+      "id": "W1",
+      "title": "SG · CurioTrail mark: on home, map, quest and completion; labelled once; never blocks controls; copyright and notices",
+      "status": "pass",
+      "ms": 23458
+    },
+    {
+      "id": "A1b",
+      "title": "No console errors during the whole run",
+      "status": "pass",
+      "ms": 1
+    }
+  ],
+  "perf": {
+    "homeInteractiveMs": 471,
+    "islandLowMs": 1030,
+    "resources": [
+      {
+        "file": "assets/index-Yp9C72pI.js",
+        "kb": 146,
+        "ms": 11
+      },
+      {
+        "file": "assets/react-ChtNbmH8.js",
+        "kb": 139,
+        "ms": 13
+      },
+      {
+        "file": "assets/index-C1UfjLUY.css",
+        "kb": 51,
+        "ms": 12
+      },
+      {
+        "file": "data/world.json",
+        "kb": 2,
+        "ms": 8
+      },
+      {
+        "file": "quests/missing-signal.json",
+        "kb": 21,
+        "ms": 14
+      },
+      {
+        "file": "quests/the-ledger.json",
+        "kb": 19,
+        "ms": 13
+      },
+      {
+        "file": "quests/broken-tally.json",
+        "kb": 13,
+        "ms": 16
+      },
+      {
+        "file": "quests/market-ledger.json",
+        "kb": 13,
+        "ms": 18
+      },
+      {
+        "file": "quests/great-hall-dashboard.json",
+        "kb": 14,
+        "ms": 16
+      },
+      {
+        "file": "quests/star-chart.json",
+        "kb": 18,
+        "ms": 18
+      },
+      {
+        "file": "data/curriculum.json",
+        "kb": 4,
+        "ms": 3
+      },
+      {
+        "file": "assets/WorldRenderer-CuiFOl7S.js",
+        "kb": 141,
+        "ms": 9
+      },
+      {
+        "file": "assets/three-CNTJ-UMu.js",
+        "kb": 589,
+        "ms": 11
+      },
+      {
+        "file": "island-b/VikingIsland_Scene.glb",
+        "kb": 7076,
+        "ms": 98
+      },
+      {
+        "file": "data/explore.json",
+        "kb": 2,
+        "ms": 4
+      },
+      {
+        "file": "data/nav-island-b.json",
+        "kb": 123,
+        "ms": 4
+      }
+    ],
+    "desktopStats": {
+      "fps": 2,
+      "drawCalls": 65,
+      "triangles": 262868,
+      "geometries": 70,
+      "textures": 18,
+      "lod": "low",
+      "pixelRatio": 1,
+      "markers": [
+        {
+          "id": "signal-woods",
+          "y": 8.5,
+          "status": "available"
+        },
+        {
+          "id": "viking-workshop",
+          "y": 2,
+          "status": "locked"
+        },
+        {
+          "id": "trading-market",
+          "y": 1.5,
+          "status": "locked"
+        },
+        {
+          "id": "great-hall",
+          "y": 2,
+          "status": "locked"
+        },
+        {
+          "id": "web-frontier",
+          "y": 0.5,
+          "status": "planned"
+        }
+      ],
+      "camera": [
+        -86.71,
+        82.5,
+        109.91
+      ],
+      "character": null,
+      "mode": "overview",
+      "explore": {
+        "active": false,
+        "view": "third",
+        "player": null,
+        "state": "Idle",
+        "npcs": {
+          "mira": {
+            "x": -27.5,
+            "z": 6,
+            "borrowed": false
+          },
+          "tove": {
+            "x": 14,
+            "z": 36.3,
+            "borrowed": false
+          }
+        },
+        "target": ""
+      },
+      "streamed": null
+    },
+    "canvasColourBuckets": 397,
+    "markerPickUrl": "http://localhost:4321/CURIO/#/map/signal-woods",
+    "finalProgress": {
+      "totalXp": 660,
+      "stars": 13,
+      "badges": [
+        "signal-restorer",
+        "ledger-reader",
+        "code-mender",
+        "ledger-keeper",
+        "hall-analyst",
+        "star-cartographer"
+      ]
+    },
+    "mobileStats": {
+      "fps": 0,
+      "drawCalls": 15,
+      "triangles": 210646,
+      "geometries": 19,
+      "textures": 2,
+      "lod": "low",
+      "pixelRatio": 1.25,
+      "markers": [
+        {
+          "id": "signal-woods",
+          "y": 8.5,
+          "status": "available"
+        },
+        {
+          "id": "viking-workshop",
+          "y": 2,
+          "status": "locked"
+        },
+        {
+          "id": "trading-market",
+          "y": 1.5,
+          "status": "locked"
+        },
+        {
+          "id": "great-hall",
+          "y": 2,
+          "status": "locked"
+        },
+        {
+          "id": "web-frontier",
+          "y": 0.5,
+          "status": "planned"
+        }
+      ],
+      "camera": [
+        -81.08,
+        82.5,
+        114.13
+      ],
+      "character": null,
+      "mode": "overview",
+      "explore": {
+        "active": false,
+        "view": "third",
+        "player": null,
+        "state": null,
+        "npcs": {},
+        "target": ""
+      },
+      "streamed": null
+    }
+  }
+}

@@ -3,7 +3,8 @@ import { GameProvider, useGame, type Content } from './game';
 import { navigate, useRoute, type Route } from './router';
 import { applySettings, focusMainHeading, prefersReducedMotion } from './a11y';
 import { validateCurriculum, validateQuest, validateRequirements, validateWorld } from '../engine/quest-validation';
-import type { Curriculum, Quest, World } from '../engine/types';
+import type { Curriculum, IslandOverlay, Quest, World } from '../engine/types';
+import { applyIslandOverlay, islandVariant } from './island-variant';
 import { destinationStatus, destinationForQuest, questStatus } from '../engine/progression';
 import { questRecord } from '../engine/progress-store';
 import { detectQuality, webglAvailable } from '../world/capabilities';
@@ -30,7 +31,10 @@ async function fetchJson<T>(path: string): Promise<T> {
 }
 
 async function loadContent(): Promise<Content> {
-  const world = await fetchJson<World>('data/world.json');
+  let world = await fetchJson<World>('data/world.json');
+  // Opt-in island variant (e.g. ?island=realistic): the default island is unchanged without it.
+  const variant = islandVariant(location.search);
+  if (variant) world = applyIslandOverlay(world, await fetchJson<IslandOverlay>(`data/islands/${variant}.json`));
   const ids = world.destinations.flatMap((d) => d.quests);
   const quests = await Promise.all(ids.map((id) => fetchJson<Quest>(`data/quests/${id}.json`)));
   for (const q of quests) {

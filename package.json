@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "e2e": "node e2e/run-e2e.cjs",
     "optimize-island": "node --max-old-space-size=12000 tools/optimize-island.mjs",
+    "build-island-realistic": "node tools/island-pipeline/build.mjs",
     "notices": "node tools/build-notices.mjs"
   },
   "engines": {

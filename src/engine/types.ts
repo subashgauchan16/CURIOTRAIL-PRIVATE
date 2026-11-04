@@ -214,6 +214,23 @@ export interface IslandConfig {
   scale: number; // 1 = original island (1 unit = 1 block); 0.25 = island B (1 unit = 1 m)
   characterScale: number; // scale of the procedural quest characters
   nav?: string; // walk grid under ./data/ (enables free exploration)
+  /** Streamed tile manifest under ./models/ (realistic island): replaces `files` for drawing. */
+  streamed?: string;
+  /** Per-island positions for the NPCs and objects of explore.json (Blender x, y), when they differ from island B. */
+  placements?: {
+    npcs?: Record<string, { at: [number, number]; rot?: number }>;
+    objects?: Record<string, [number, number]>;
+  };
+}
+
+/** Opt-in island variant (`data/islands/<name>.json`, chosen with `?island=<name>`): island config + positions only. */
+export interface IslandOverlay {
+  schemaVersion: 1;
+  island: IslandConfig;
+  /** Three.js [x, z] destination positions on this island. */
+  positions?: Record<string, [number, number]>;
+  landmarks?: Record<string, string>;
+  spawn?: [number, number];
 }
 
 export interface World {
