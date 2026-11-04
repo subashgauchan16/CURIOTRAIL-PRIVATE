@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "note": "Opt-in island variant (open the game with ?island=realistic). The streamed realistic Viking island shares island A's layout and coordinate frame, so destination positions and landmarks are island A's originals (git fc54e59). Only positions and texts are overridden; quests, unlock rules, NPC ids and dialogue come from world.json and explore.json unchanged. NPC/object 'at' and 'spawn' are Blender coordinates (x east, y north), like explore.json; destination positions are Three.js [x, z], like world.json.",
+  "island": {
+    "files": {
+      "low": "island-realistic/manifest.json"
+    },
+    "streamed": "island-realistic/manifest.json",
+    "scale": 1,
+    "characterScale": 1,
+    "nav": "nav-island-realistic.json",
+    "placements": {
+      "npcs": {
+        "mira": {
+          "at": [
+            -29.5,
+            64.5
+          ],
+          "rot": 90
+        },
+        "tove": {
+          "at": [
+            3.5,
+            83.5
+          ],
+          "rot": 180
+        }
+      },
+      "objects": {
+        "basket-mira": [
+          -28.5,
+          62.5
+        ],
+        "notice-board": [
+          -15.5,
+          72.5
+        ],
+        "ledger-desk": [
+          2.5,
+          80.5
+        ]
+      }
+    }
+  },
+  "spawn": [
+    -23,
+    70
+  ],
+  "positions": {
+    "signal-woods": [
+      -11.5,
+      171.5
+    ],
+    "viking-workshop": [
+      -67.5,
+      -22.5
+    ],
+    "trading-market": [
+      2.5,
+      -72.5
+    ],
+    "great-hall": [
+      141.5,
+      13.5
+    ],
+    "web-frontier": [
+      -29.5,
+      -178.5
+    ]
+  },
+  "landmarks": {
+    "signal-woods": "The forest hamlet with the round signal tower on the island's south shore.",
+    "viking-workshop": "The timber workshops west of the village square.",
+    "trading-market": "The harbour market beside the longship docks.",
+    "great-hall": "The Jarl's longhouse on the eastern hillside.",
+    "web-frontier": "The lookout tower at the end of the northern pier."
+  }
+}

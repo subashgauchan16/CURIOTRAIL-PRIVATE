@@ -72,6 +72,7 @@ export function WorldStage({ enabled, quality, reducedMotion, mode, destinations
           modelBase: './models/',
           islandFiles: island?.files,
           scale: island?.scale,
+          streamed: island?.streamed,
           characterScale: island?.characterScale,
           onSelect: (id) => onSelectRef.current?.(id),
           onLoad: (state) => {
@@ -91,7 +92,7 @@ export function WorldStage({ enabled, quality, reducedMotion, mode, destinations
         void instance.loadIsland().then(() => {
           // Islands with a walk grid get free exploration and persistent rigged NPCs.
           if (!island?.nav || cancelled) return undefined;
-          return loadExplore(island.nav).then(({ content, nav }) => {
+          return loadExplore(island.nav, island.placements).then(({ content, nav }) => {
             if (cancelled) return undefined;
             created.explore.setNav(new NavGrid(nav));
             created.explore.setInteractables(interactables(content, destinationsRef.current));

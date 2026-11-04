@@ -1,0 +1,846 @@
+{
+ "generator": "tools/island-pipeline (npm run build-island-realistic)",
+ "chunk_m": 96,
+ "tex": 1024,
+ "shared": {
+  "file": "shared.glb",
+  "bytes": 3039892,
+  "textures": 12,
+  "tris": {
+   "MatLib": 9,
+   "TreeTpl_Spruce_A": 3374,
+   "TreeTpl_Spruce_B": 3550,
+   "TreeTpl_Spruce_C": 3374,
+   "TreeTpl_Pine_A": 1838,
+   "ShipTpl": 4072,
+   "RockTpl": 320
+  }
+ },
+ "extras": [
+  "instances.json",
+  "opt_impostor_Spruce_A.webp",
+  "opt_impostor_Pine_A.webp"
+ ],
+ "chunks": [
+  {
+   "i": 0,
+   "j": 2,
+   "name": "0_2",
+   "houses": 0,
+   "deck_cells": 396,
+   "three_bounds": [
+    -288,
+    -192,
+    -86,
+    10
+   ],
+   "ground": [
+    -16,
+    6.225563049316406
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    6606,
+    1980
+   ],
+   "raw_bytes": 2026364,
+   "seconds": 6.8,
+   "file": "chunk_0_2.glb",
+   "bytes": 597392,
+   "textures": 1
+  },
+  {
+   "i": 0,
+   "j": 3,
+   "name": "0_3",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    -288,
+    -192,
+    10,
+    106
+   ],
+   "ground": [
+    -16,
+    13.91524887084961
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 988652,
+   "seconds": 4.7,
+   "file": "chunk_0_3.glb",
+   "bytes": 428256,
+   "textures": 1
+  },
+  {
+   "i": 0,
+   "j": 4,
+   "name": "0_4",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    -288,
+    -192,
+    106,
+    202
+   ],
+   "ground": [
+    -16,
+    0.801910400390625
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 986156,
+   "seconds": 4.5,
+   "file": "chunk_0_4.glb",
+   "bytes": 402288,
+   "textures": 1
+  },
+  {
+   "i": 0,
+   "j": 5,
+   "name": "0_5",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    -288,
+    -192,
+    202,
+    278
+   ],
+   "ground": [
+    -16,
+    0.049091339111328125
+   ],
+   "tris_terrain": [
+    15280,
+    3992,
+    1084
+   ],
+   "raw_bytes": 862292,
+   "seconds": 4.1,
+   "file": "chunk_0_5.glb",
+   "bytes": 387704,
+   "textures": 1
+  },
+  {
+   "i": 1,
+   "j": 1,
+   "name": "1_1",
+   "houses": 1,
+   "deck_cells": 76,
+   "three_bounds": [
+    -192,
+    -96,
+    -182,
+    -86
+   ],
+   "ground": [
+    -16,
+    0.23587417602539062
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    2571,
+    753
+   ],
+   "raw_bytes": 4007332,
+   "seconds": 4,
+   "file": "chunk_1_1.glb",
+   "bytes": 485232,
+   "textures": 1
+  },
+  {
+   "i": 1,
+   "j": 2,
+   "name": "1_2",
+   "houses": 9,
+   "deck_cells": 310,
+   "three_bounds": [
+    -192,
+    -96,
+    -86,
+    10
+   ],
+   "ground": [
+    -14.142337799072266,
+    35.13372039794922
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    15167,
+    4462
+   ],
+   "raw_bytes": 5145032,
+   "seconds": 3.8,
+   "file": "chunk_1_2.glb",
+   "bytes": 952452,
+   "textures": 1
+  },
+  {
+   "i": 1,
+   "j": 3,
+   "name": "1_3",
+   "houses": 0,
+   "deck_cells": 332,
+   "three_bounds": [
+    -192,
+    -96,
+    10,
+    106
+   ],
+   "ground": [
+    -1.6200675964355469,
+    73.91997528076172
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    6756,
+    2026
+   ],
+   "raw_bytes": 2133492,
+   "seconds": 3.7,
+   "file": "chunk_1_3.glb",
+   "bytes": 668488,
+   "textures": 1
+  },
+  {
+   "i": 1,
+   "j": 4,
+   "name": "1_4",
+   "houses": 1,
+   "deck_cells": 219,
+   "three_bounds": [
+    -192,
+    -96,
+    106,
+    202
+   ],
+   "ground": [
+    -15.260114669799805,
+    63.99464416503906
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    4880,
+    1448
+   ],
+   "raw_bytes": 4228912,
+   "seconds": 4.2,
+   "file": "chunk_1_4.glb",
+   "bytes": 629740,
+   "textures": 1
+  },
+  {
+   "i": 1,
+   "j": 5,
+   "name": "1_5",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    -192,
+    -96,
+    202,
+    278
+   ],
+   "ground": [
+    -16,
+    -0.6750335693359375
+   ],
+   "tris_terrain": [
+    15280,
+    3992,
+    1084
+   ],
+   "raw_bytes": 870348,
+   "seconds": 3.6,
+   "file": "chunk_1_5.glb",
+   "bytes": 422440,
+   "textures": 1
+  },
+  {
+   "i": 2,
+   "j": 0,
+   "name": "2_0",
+   "houses": 1,
+   "deck_cells": 0,
+   "three_bounds": [
+    -96,
+    0,
+    -278,
+    -182
+   ],
+   "ground": [
+    -16,
+    -16
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    942,
+    264
+   ],
+   "raw_bytes": 3880580,
+   "seconds": 4.1,
+   "file": "chunk_2_0.glb",
+   "bytes": 412448,
+   "textures": 1
+  },
+  {
+   "i": 2,
+   "j": 1,
+   "name": "2_1",
+   "houses": 1,
+   "deck_cells": 342,
+   "three_bounds": [
+    -96,
+    0,
+    -182,
+    -86
+   ],
+   "ground": [
+    -16,
+    5.239284515380859
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    7843,
+    2346
+   ],
+   "raw_bytes": 3479188,
+   "seconds": 4.1,
+   "file": "chunk_2_1.glb",
+   "bytes": 648228,
+   "textures": 1
+  },
+  {
+   "i": 2,
+   "j": 2,
+   "name": "2_2",
+   "houses": 14,
+   "deck_cells": 276,
+   "three_bounds": [
+    -96,
+    0,
+    -86,
+    10
+   ],
+   "ground": [
+    -2.0009689331054688,
+    54.52155303955078
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    19094,
+    5667
+   ],
+   "raw_bytes": 5562040,
+   "seconds": 4.3,
+   "file": "chunk_2_2.glb",
+   "bytes": 1152952,
+   "textures": 1
+  },
+  {
+   "i": 2,
+   "j": 3,
+   "name": "2_3",
+   "houses": 0,
+   "deck_cells": 114,
+   "three_bounds": [
+    -96,
+    0,
+    10,
+    106
+   ],
+   "ground": [
+    34.50526428222656,
+    115.88591003417969
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    3260,
+    977
+   ],
+   "raw_bytes": 1941604,
+   "seconds": 4,
+   "file": "chunk_2_3.glb",
+   "bytes": 638116,
+   "textures": 1
+  },
+  {
+   "i": 2,
+   "j": 4,
+   "name": "2_4",
+   "houses": 3,
+   "deck_cells": 36,
+   "three_bounds": [
+    -96,
+    0,
+    106,
+    202
+   ],
+   "ground": [
+    -3.1101646423339844,
+    82.0436019897461
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    3351,
+    979
+   ],
+   "raw_bytes": 4180968,
+   "seconds": 4.1,
+   "file": "chunk_2_4.glb",
+   "bytes": 645976,
+   "textures": 1
+  },
+  {
+   "i": 2,
+   "j": 5,
+   "name": "2_5",
+   "houses": 1,
+   "deck_cells": 470,
+   "three_bounds": [
+    -96,
+    0,
+    202,
+    278
+   ],
+   "ground": [
+    -16,
+    8.84762191772461
+   ],
+   "tris_terrain": [
+    15280,
+    3992,
+    1084
+   ],
+   "tris_buildings": [
+    8875,
+    2634
+   ],
+   "raw_bytes": 3397136,
+   "seconds": 4.6,
+   "file": "chunk_2_5.glb",
+   "bytes": 650268,
+   "textures": 1
+  },
+  {
+   "i": 3,
+   "j": 0,
+   "name": "3_0",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    0,
+    96,
+    -278,
+    -182
+   ],
+   "ground": [
+    -16,
+    -0.5958137512207031
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 972884,
+   "seconds": 4.4,
+   "file": "chunk_3_0.glb",
+   "bytes": 379252,
+   "textures": 1
+  },
+  {
+   "i": 3,
+   "j": 1,
+   "name": "3_1",
+   "houses": 2,
+   "deck_cells": 318,
+   "three_bounds": [
+    0,
+    96,
+    -182,
+    -86
+   ],
+   "ground": [
+    -16,
+    7.556182861328125
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    8629,
+    2551
+   ],
+   "raw_bytes": 4488428,
+   "seconds": 4.5,
+   "file": "chunk_3_1.glb",
+   "bytes": 670236,
+   "textures": 1
+  },
+  {
+   "i": 3,
+   "j": 2,
+   "name": "3_2",
+   "houses": 14,
+   "deck_cells": 569,
+   "three_bounds": [
+    0,
+    96,
+    -86,
+    10
+   ],
+   "ground": [
+    -0.029079437255859375,
+    65.06916809082031
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    25564,
+    7589
+   ],
+   "raw_bytes": 6021604,
+   "seconds": 4.6,
+   "file": "chunk_3_2.glb",
+   "bytes": 1260900,
+   "textures": 1
+  },
+  {
+   "i": 3,
+   "j": 3,
+   "name": "3_3",
+   "houses": 2,
+   "deck_cells": 408,
+   "three_bounds": [
+    0,
+    96,
+    10,
+    106
+   ],
+   "ground": [
+    22.507530212402344,
+    87.23344421386719
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    9496,
+    2810
+   ],
+   "raw_bytes": 4640876,
+   "seconds": 4.2,
+   "file": "chunk_3_3.glb",
+   "bytes": 780156,
+   "textures": 1
+  },
+  {
+   "i": 3,
+   "j": 4,
+   "name": "3_4",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    0,
+    96,
+    106,
+    202
+   ],
+   "ground": [
+    -14.202733993530273,
+    58.100128173828125
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 1023908,
+   "seconds": 3.9,
+   "file": "chunk_3_4.glb",
+   "bytes": 486528,
+   "textures": 1
+  },
+  {
+   "i": 3,
+   "j": 5,
+   "name": "3_5",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    0,
+    96,
+    202,
+    278
+   ],
+   "ground": [
+    -16,
+    5.478553771972656
+   ],
+   "tris_terrain": [
+    15280,
+    3992,
+    1084
+   ],
+   "raw_bytes": 865520,
+   "seconds": 4.1,
+   "file": "chunk_3_5.glb",
+   "bytes": 406352,
+   "textures": 1
+  },
+  {
+   "i": 4,
+   "j": 0,
+   "name": "4_0",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    96,
+    192,
+    -278,
+    -182
+   ],
+   "ground": [
+    -16,
+    0.18383407592773438
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 978960,
+   "seconds": 4.4,
+   "file": "chunk_4_0.glb",
+   "bytes": 434276,
+   "textures": 1
+  },
+  {
+   "i": 4,
+   "j": 1,
+   "name": "4_1",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    96,
+    192,
+    -182,
+    -86
+   ],
+   "ground": [
+    -15.958246231079102,
+    8.615043640136719
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 985184,
+   "seconds": 4.8,
+   "file": "chunk_4_1.glb",
+   "bytes": 448424,
+   "textures": 1
+  },
+  {
+   "i": 4,
+   "j": 2,
+   "name": "4_2",
+   "houses": 3,
+   "deck_cells": 241,
+   "three_bounds": [
+    96,
+    192,
+    -86,
+    10
+   ],
+   "ground": [
+    -12.634147644042969,
+    31.063583374023438
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    8542,
+    2545
+   ],
+   "raw_bytes": 4534004,
+   "seconds": 5.4,
+   "file": "chunk_4_2.glb",
+   "bytes": 721176,
+   "textures": 1
+  },
+  {
+   "i": 4,
+   "j": 3,
+   "name": "4_3",
+   "houses": 1,
+   "deck_cells": 0,
+   "three_bounds": [
+    96,
+    192,
+    10,
+    106
+   ],
+   "ground": [
+    -11.079011917114258,
+    38.47382354736328
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "tris_buildings": [
+    754,
+    224
+   ],
+   "raw_bytes": 3926928,
+   "seconds": 5.5,
+   "file": "chunk_4_3.glb",
+   "bytes": 523152,
+   "textures": 1
+  },
+  {
+   "i": 4,
+   "j": 4,
+   "name": "4_4",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    96,
+    192,
+    106,
+    202
+   ],
+   "ground": [
+    -16,
+    22.737468719482422
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 983588,
+   "seconds": 6.9,
+   "file": "chunk_4_4.glb",
+   "bytes": 425500,
+   "textures": 1
+  },
+  {
+   "i": 5,
+   "j": 2,
+   "name": "5_2",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    192,
+    288,
+    -86,
+    10
+   ],
+   "ground": [
+    -16,
+    2.643535614013672
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 978900,
+   "seconds": 5.8,
+   "file": "chunk_5_2.glb",
+   "bytes": 395164,
+   "textures": 1
+  },
+  {
+   "i": 5,
+   "j": 3,
+   "name": "5_3",
+   "houses": 0,
+   "deck_cells": 0,
+   "three_bounds": [
+    192,
+    288,
+    10,
+    106
+   ],
+   "ground": [
+    -16,
+    1.9961051940917969
+   ],
+   "tris_terrain": [
+    19200,
+    4992,
+    1344
+   ],
+   "raw_bytes": 983292,
+   "seconds": 5,
+   "file": "chunk_5_3.glb",
+   "bytes": 399928,
+   "textures": 1
+  }
+ ]
+}

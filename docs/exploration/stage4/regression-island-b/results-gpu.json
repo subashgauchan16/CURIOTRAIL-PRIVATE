@@ -1,0 +1,227 @@
+{
+ "date": "2026-11-04T17:30:12.645Z",
+ "gpu": true,
+ "passed": 16,
+ "failed": 0,
+ "results": [
+  {
+   "id": "X1",
+   "title": "Load the island and spawn as the Pathfinder (third person)",
+   "status": "pass",
+   "ms": 2662,
+   "detail": {
+    "player": {
+     "x": 0.5,
+     "y": 0.65,
+     "z": 47.5,
+     "heading": 3.14,
+     "speed": 0
+    },
+    "npcs": {
+     "mira": {
+      "x": -27.5,
+      "z": 6,
+      "borrowed": false
+     },
+     "tove": {
+      "x": 14,
+      "z": 36.3,
+      "borrowed": false
+     }
+    },
+    "fps": 6
+   }
+  },
+  {
+   "id": "X2",
+   "title": "Move with the keyboard (W, then arrows); frame-rate-independent walking and running",
+   "status": "pass",
+   "ms": 2607,
+   "detail": {
+    "start": {
+     "x": 0.5,
+     "y": 0.65,
+     "z": 47.5,
+     "heading": 3.14,
+     "speed": 0
+    },
+    "walked": {
+     "x": 0.5,
+     "y": 0.5,
+     "z": 45.22,
+     "heading": 3.14,
+     "speed": 1.6
+    },
+    "ran": {
+     "x": 0.5,
+     "y": 0.5,
+     "z": 41.62,
+     "heading": 3.14,
+     "speed": 3.8
+    }
+   }
+  },
+  {
+   "id": "X2b",
+   "title": "The ground and buildings block movement (never walks through the storehouse or into the sea)",
+   "status": "pass",
+   "ms": 6552,
+   "detail": {
+    "storehouse": {
+     "x": 29.7,
+     "y": 1.5,
+     "z": 27.5,
+     "heading": 1.57,
+     "speed": 1.6
+    },
+    "dockEnd": {
+     "x": 0.5,
+     "y": 0.65,
+     "z": 51.69,
+     "heading": 0,
+     "speed": 1.6
+    }
+   }
+  },
+  {
+   "id": "X3",
+   "title": "Approach Mira and start a dialogue with E",
+   "status": "pass",
+   "ms": 690,
+   "detail": {
+    "line": ""
+   }
+  },
+  {
+   "id": "X4",
+   "title": "Leave the dialogue (Escape) and keep exploring",
+   "status": "pass",
+   "ms": 1237,
+   "detail": {
+    "before": {
+     "x": -25.5,
+     "y": 2.5,
+     "z": 6.5,
+     "heading": -1.57,
+     "speed": 0
+    },
+    "after": {
+     "x": -25.5,
+     "y": 2.5,
+     "z": 5.33,
+     "heading": -3.14,
+     "speed": 1.6
+    }
+   }
+  },
+  {
+   "id": "X5",
+   "title": "Inspect an apple basket by Mira’s door",
+   "status": "pass",
+   "ms": 705
+  },
+  {
+   "id": "X5b",
+   "title": "Too far / unavailable feedback",
+   "status": "pass",
+   "ms": 833,
+   "detail": {
+    "message": "Move closer to Basket of apples."
+   }
+  },
+  {
+   "id": "X6",
+   "title": "Travel to the Trading Market in the same world (M map), market locked on a new save",
+   "status": "pass",
+   "ms": 1466,
+   "detail": {
+    "message": "The Trading Market is locked. Complete “The Missing Signal” to unlock."
+   }
+  },
+  {
+   "id": "X7",
+   "title": "Enter the Trading Market and launch the existing quest from the same world",
+   "status": "pass",
+   "ms": 4773,
+   "detail": {
+    "character": "tove",
+    "tove": {
+     "x": 16.25,
+     "z": 31.75,
+     "borrowed": true
+    }
+   }
+  },
+  {
+   "id": "X8",
+   "title": "Exit the quest and return to the same island position",
+   "status": "pass",
+   "ms": 806,
+   "detail": {
+    "leftAt": {
+     "x": 14.5,
+     "y": 1.5,
+     "z": 32.5,
+     "heading": 3.14,
+     "speed": 0
+    },
+    "back": {
+     "x": 14.5,
+     "y": 1.5,
+     "z": 32.5,
+     "heading": 3.14,
+     "speed": 0
+    }
+   }
+  },
+  {
+   "id": "X9",
+   "title": "Player progress and quest completion are intact",
+   "status": "pass",
+   "ms": 2,
+   "detail": {
+    "missingSignal": {
+     "run": null,
+     "runXp": 0,
+     "lastRun": null,
+     "lastXp": 120,
+     "bestXp": 120,
+     "bestStars": 3,
+     "completed": true,
+     "completions": 1
+    },
+    "marketLedgerStarted": false
+   }
+  },
+  {
+   "id": "X10a",
+   "title": "Resize keeps exploration working",
+   "status": "pass",
+   "ms": 1298
+  },
+  {
+   "id": "X10b",
+   "title": "Keyboard only: Tab to the prompt, Enter to act; first-person toggle (V)",
+   "status": "pass",
+   "ms": 1051
+  },
+  {
+   "id": "X10c",
+   "title": "Cleanup: leaving exploration stops input and hides the player; no console errors",
+   "status": "pass",
+   "ms": 2026
+  },
+  {
+   "id": "X10d",
+   "title": "Island fails to load: exploration shows a clear fallback, map still works",
+   "status": "pass",
+   "ms": 1789
+  },
+  {
+   "id": "X10e",
+   "title": "Graphics off (WebGL fallback): exploration explains itself, quests still reachable",
+   "status": "pass",
+   "ms": 511
+  }
+ ]
+}

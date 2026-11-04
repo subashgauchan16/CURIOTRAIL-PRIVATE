@@ -1,0 +1,26 @@
+{
+ "when": "2026-11-04T17:19:45.708Z",
+ "source": "C:\\Users\\thaka\\Downloads\\Viking_realistic island",
+ "steps": [
+  {
+   "step": "webp",
+   "seconds": 30.6,
+   "code": 0
+  },
+  {
+   "step": "nav",
+   "seconds": 2.2,
+   "code": 0
+  },
+  {
+   "step": "optimise",
+   "seconds": 3.2,
+   "code": 0
+  },
+  {
+   "step": "checks",
+   "seconds": 0.3,
+   "code": 0
+  }
+ ]
+}

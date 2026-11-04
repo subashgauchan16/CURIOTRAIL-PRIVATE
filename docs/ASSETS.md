@@ -80,3 +80,17 @@ These are all code, with no image files:
 | sql.js 1.13 (SQLite compiled to WebAssembly) | MIT | Running learners' SQL |
 | Vite, Vitest, TypeScript | MIT / Apache-2.0 | Build and tests |
 | glTF-Transform, meshoptimizer, pngjs | MIT | Asset pipeline (dev only) |
+
+
+## Realistic Viking island (streamed tiles, opt-in with `?island=realistic`)
+
+| | |
+|---|---|
+| Files | `public/models/island-realistic/`: `manifest.json`, `shared.glb`, 28 × `chunk_<i>_<j>.glb`, `instances.json`, 2 impostor WebPs. Plus `public/data/nav-island-realistic.json` and `public/data/islands/realistic.json`. |
+| Derived from | The layout and heights of "Viking Island - Minecraft" by cubical.xyz (CC-BY-4.0): block heightfield, building footprints, walkways, ship and tree positions, rebuilt as new geometry. No original mesh, texture or Minecraft artwork is included. |
+| Textures | Poly Haven, CC0 1.0: `aerial_grass_rock`, `aerial_rocks_02`, `coast_sand_01`, `stony_dirt_path` (baked per tile), `brown_planks_05`, `medieval_wood`, `thatch_roof_angled`, `mossy_stone_wall`, `knotted_pine_bark` |
+| Licence of the files | CC-BY-4.0 (adaptation of the island above, credit required). The textures inside are CC0. |
+| Build | `npm run build-island-realistic -- --source "<Viking_realistic island folder>"` (see `tools/island-pipeline/README.md`) |
+| Format | glTF 2.0 + `EXT_meshopt_compression` (decoded by three's bundled `MeshoptDecoder`, as for the other islands) + `EXT_texture_webp`. Positions and UVs are float, because tiles share the library's materials. |
+
+The master Blender file (`Viking_realistic_island.blend`) and the source data stay outside the repository. The pipeline only reads them.
