@@ -1034,7 +1034,9 @@ const tests = [];
     await p.waitForSelector('.feedback--correct');
     const after = await p.evaluate(() => JSON.parse(localStorage.getItem('curiotrail.progress')));
     expect(after.version === 5, `save version ${after.version}`);
-    expect(JSON.stringify(after.quests) === JSON.stringify(before.quests), 'practice changed quest results');
+    // The seeded save is v3 on disk until the first write, so compare the fields both versions hold.
+    const results = (quests) => Object.fromEntries(Object.entries(quests).map(([id, r]) => [id, [r.bestXp, r.lastXp, r.bestStars, r.completed, r.completions]]));
+    expect(JSON.stringify(results(after.quests)) === JSON.stringify(results(before.quests)), 'practice changed quest results');
     expect(after.events.some((e) => e.k === 'practice' && e.q === 'market-ledger'), 'practice not in the learning history');
     await p.goto(`${URL_BASE}#/progress`);
     await p.waitForSelector('#pf-privacy-title');

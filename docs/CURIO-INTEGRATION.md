@@ -66,4 +66,4 @@ Files changed only where a feature needed them: `App`, `router`, `game`, `main`,
 
 - **Licensing:** see [PROVENANCE.md](../PROVENANCE.md#6-material-integrated-from-the-curio-repository).
 - **PECR:** the learning history is on by default and stored on the device. Whether that storage needs consent wasn't assessed here and should go to the legal review of the licence and privacy text.
-- **Market stall on island B:** it was placed by the same rule as on island A, scaled to island B. See the verification notes in the pull request or final report.
+- **Market stall on island B:** it's placed by the same rule as on island A, scaled to island B, and it reacts correctly in the quest view. It stands close to island B's own market desk, and the walk grid doesn't know about it, so the Pathfinder can walk through it in free exploration. It needs a look by eye.
