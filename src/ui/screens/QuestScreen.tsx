@@ -169,6 +169,7 @@ export function QuestScreen({ questId, onPose }: Props) {
       <div className={`quest-panel${scene.type === 'schema' ? ' quest-panel--wide' : ''}`}>
         <header className="quest-head">
           <a className="back-link" href={`#/map/${destination.id}`}>← {destination.name}</a>
+          {world.island?.nav && <a className="back-link back-link--island" href="#/explore">Return to the island</a>}
           <p className="eyebrow">Quest {String(quest.number).padStart(2, '0')} · {quest.subject}{module ? ` · Module ${module.number}: ${module.title}` : ''}</p>
           <h1 id="quest-title" className="quest-title">{quest.title}</h1>
           <div className="quest-progress">

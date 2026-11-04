@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "note": "Free-exploration content for island B. Positions are Blender coordinates (x east, y north) from nav-island-b.json; quests and their rules stay in world.json and the quest files.",
+  "player": { "model": "characters/Pathfinder.glb" },
+  "npcs": [
+    {
+      "id": "mira",
+      "name": "Mira",
+      "role": "Orchard keeper",
+      "model": "characters/Mira.glb",
+      "at": [-27.5, -6],
+      "rot": 90,
+      "lines": [
+        "Pathfinder! You found your way up from the dock.",
+        "The numbers promise more apples than we can actually deliver.",
+        "Look at the baskets by my door, then find Tove at the market. She keeps the ledger."
+      ]
+    },
+    {
+      "id": "tove",
+      "name": "Tove",
+      "role": "Voyage keeper",
+      "model": "characters/Tove.glb",
+      "at": [14, -36.3],
+      "rot": 180,
+      "lines": [
+        "Welcome to the market. Every apple that leaves this dock goes in my ledger.",
+        "If the ledger is wrong, the ship sails short.",
+        "The Trading Market quest starts at the market marker beside the stalls."
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "basket-mira",
+      "name": "Basket of apples",
+      "at": [-26.6, -7.6],
+      "text": "Firm and bruised fruit share the same basket. Before anyone counts them, someone has to decide what counts as usable."
+    },
+    {
+      "id": "notice-board",
+      "name": "Village notice board",
+      "at": [4, -13.5],
+      "text": "Market prices for the week are pinned here, in three different hands. Two of them disagree about the price of honey."
+    },
+    {
+      "id": "ledger-desk",
+      "name": "Tove's ledger desk",
+      "at": [14, -35],
+      "text": "Columns for item, price and quantity sold, and a row of totals that nobody has filled in yet."
+    }
+  ]
+}

@@ -36,10 +36,14 @@ export function HomeScreen({ feedbackUrl }: { feedbackUrl: string }) {
           {resume ? (
             <a className="btn btn-primary btn-lg" href={`#/quest/${resume.id}`}>Continue “{resume.title}” (step {resume.step} of {resume.total})</a>
           ) : firstDone ? (
-            <a className="btn btn-primary btn-lg" href="#/map">Explore the map</a>
+            <>
+              {world.island?.nav && <a className="btn btn-primary btn-lg" href="#/explore">Explore the island</a>}
+              <a className={`btn ${world.island?.nav ? 'btn-ghost' : 'btn-primary'} btn-lg`} href="#/map">Open the map</a>
+            </>
           ) : (
             <a className="btn btn-primary btn-lg" href={startHref}>Start Your First Quest</a>
           )}
+          {progress.player && (resume || !firstDone) && world.island?.nav && <a className="btn btn-ghost btn-lg" href="#/explore">Explore the island</a>}
           {progress.player && (resume || !firstDone) && <a className="btn btn-ghost btn-lg" href="#/map">Open the map</a>}
         </div>
         <ul className="hero-facts">

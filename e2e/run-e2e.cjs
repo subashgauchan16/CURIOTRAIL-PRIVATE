@@ -140,6 +140,8 @@ const tests = [];
   const perf = {};
 
   const run = async (id, title, fn) => {
+    // E2E_ONLY=A15b,L4 runs just those checks (for re-checking failures; the full run is the record)
+    if (process.env.E2E_ONLY && !process.env.E2E_ONLY.split(',').includes(id)) return;
     const started = Date.now();
     try {
       await fn();
@@ -390,19 +392,31 @@ const tests = [];
     await page.goto(`${URL_BASE}#/map`);
     await page.waitForTimeout(2800);
     const a = (await stats(page)).camera;
-    await page.mouse.move(400, 400);
+    // Destination labels move with the island model, so drag from a point that is really on the canvas.
+    const start = await page.evaluate(() => {
+      const under = document.elementFromPoint(400, 400);
+      for (let y = 400; y <= 640; y += 40) for (let x = 400; x >= 160; x -= 40) {
+        if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') return { x, y, was: under ? `${under.tagName}.${under.className}` : 'none' };
+      }
+      return { x: 400, y: 400, was: 'no free canvas point found' };
+    });
+    if (start.was !== 'CANVAS.stage-canvas') console.log(`     P9-3: (400,400) was ${start.was}; dragging from (${start.x},${start.y})`);
+    await page.mouse.move(start.x, start.y);
     await page.mouse.down();
-    await page.mouse.move(250, 380, { steps: 8 });
+    await page.mouse.move(start.x - 150, start.y - 20, { steps: 8 });
     await page.mouse.up();
-    await page.waitForTimeout(600);
+    // Software rendering can drop to a few frames per second: wait for the camera to change
+    // (up to 5 s) instead of assuming a frame lands within a fixed delay.
+    const moved = (before) => page.waitForFunction((prev) => JSON.stringify(window.__curioWorld.stats().camera) !== prev, JSON.stringify(before), { timeout: 5000 }).catch(() => null);
+    await moved(a);
     const b = (await stats(page)).camera;
     expect(JSON.stringify(a) !== JSON.stringify(b), 'drag did not move the camera');
     await page.locator('body').press('q');
-    await page.waitForTimeout(300);
+    await moved(b);
     const c = (await stats(page)).camera;
     expect(JSON.stringify(b) !== JSON.stringify(c), 'Q key did not rotate');
     await page.getByRole('button', { name: 'Zoom in (+)' }).click();
-    await page.waitForTimeout(300);
+    await moved(c);
     const d = (await stats(page)).camera;
     expect(JSON.stringify(c) !== JSON.stringify(d), 'zoom button did nothing');
     await shot(page, '11-map-3d');
@@ -719,7 +733,7 @@ const tests = [];
     const c = await browser.newContext({ viewport: { width: 1366, height: 820 } });
     const p = await c.newPage();
     watch(p, 'model-fail');
-    await p.route('**/models/*.glb', (route) => route.abort());
+    await p.route('**/models/**/*.glb', (route) => route.abort());   // island files may sit in a subfolder
     await p.goto(`${URL_BASE}#/map`);
     await p.waitForSelector('.stage-error', { timeout: 60000 });
     expect((await p.locator('.stage-error').innerText()).includes('Try again'), 'no retry');

@@ -23,6 +23,7 @@ export function TopBar({ route }: { route: Route }) {
           <span>CurioTrail</span>
         </a>
         <nav className="topnav" aria-label="Main">
+          <a href="#/explore" aria-current={current('explore')}><span aria-hidden="true">🧭</span> Explore</a>
           <a href="#/map" aria-current={current('map')}><span aria-hidden="true">🗺️</span> Map</a>
           <a href="#/progress" aria-current={current('progress')}><span aria-hidden="true">⚙️</span> Progress<span className="hide-narrow">&nbsp;&amp; settings</span></a>
         </nav>

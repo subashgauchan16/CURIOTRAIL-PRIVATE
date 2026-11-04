@@ -1,0 +1,39 @@
+npm notice run curiotrail@0.2.0 e2e
+npm notice run node e2e/run-e2e.cjs
+PASS A1 Home screen loads from the /CURIO/ base path
+PASS A14 3D world renders genuine geometry attached to the island
+PASS A2 "Start Your First Quest" opens the identity step, then the real quest
+PASS C Story introduction shows Mira (3D character + dialogue) and transitions to the investigation
+PASS A3 All three evidence items can be inspected; continue is gated until then
+PASS L1 A theory card appears before the first challenge, with every teaching section
+PASS A4 A wrong answer gives the feedback written for that answer, plus hint 1
+PASS A5 A correct answer gives the explanation from the quest data and XP
+PASS A7 Hints progress and the answer can be revealed after three tries (no XP)
+PASS A10 Refreshing the browser preserves progress mid-quest
+PASS A6/F Prompt-writing challenge evaluates real choices
+PASS A4b The final announcement lists every unsupported line
+PASS A8/G Completion shows engine-calculated XP, level change, stars and skill statuses
+PASS A9 Completion unlocks only the appropriate content
+PASS A11 Replaying a quest never duplicates rewards
+PASS P9-4 Each destination can be selected from the island and opens its details
+PASS P9-3 The camera can inspect the island (drag, keyboard and buttons)
+PASS P9-6a SQL quest runs real queries and evaluates them
+PASS P9-6b Python quest reproduces the real error and evaluates expressions
+PASS P9-6c Excel quest evaluates formulas, fill-down and functions
+PASS P9-6d KPI dashboard: drag-and-drop and keyboard alternative, evaluated by the engine
+PASS L2 Modelling lab: build, get specific feedback, repair, and pass with real rules
+PASS P9-7/8 Rewards come from the engine and persist; destination states update after refresh
+PASS A13/I Progress & settings: real data, text size, motion, graphics
+PASS L3 Learning path: eight modules from real data, planned modules clearly labelled
+PASS A15a Graphics off: 2D fallback map, quests still playable
+PASS A12 Reset progress asks for confirmation and erases everything
+PASS A13b Keyboard: skip link and answering a question without a mouse
+PASS A15b Island model fails to load: clear error, retry, and quests still work
+PASS A15c WebGL unavailable: 2D map and the first quest is fully playable
+PASS L4 A save from the previous release resumes on the right step after the lesson update
+PASS A16/H Mobile layout: home, map bottom sheet, quest panel; no sideways scroll; touch targets
+PASS L5 Mobile: theory card and modelling lab work with taps only (no dragging)
+PASS W1 SG · CurioTrail mark: on home, map, quest and completion; labelled once; never blocks controls; copyright and notices
+PASS A1b No console errors during the whole run
+
+35/35 checks passed
