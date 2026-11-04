@@ -9,6 +9,7 @@ import './styles/components.css';
 import './styles/game.css';
 import './styles/learning.css';
 import './styles/explore.css';
+import './styles/profile.css';
 
 // Apply text size and motion preferences before the first paint.
 applySettings(createProgressStore().load().settings);
