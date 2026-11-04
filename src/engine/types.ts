@@ -216,6 +216,9 @@ export interface IslandConfig {
   nav?: string; // walk grid under ./data/ (enables free exploration)
   /** Streamed tile manifest under ./models/ (realistic island): replaces `files` for drawing. */
   streamed?: string;
+  /** Variant (data/islands/<name>.json) used instead on light-graphics devices: phones, small or weak devices,
+   *  software-only WebGL, or when the player picks "Light". `?island=<name>` always wins. */
+  lightVariant?: string;
   /** Per-island positions for the NPCs and objects of explore.json (Blender x, y), when they differ from island B. */
   placements?: {
     npcs?: Record<string, { at: [number, number]; rot?: number }>;

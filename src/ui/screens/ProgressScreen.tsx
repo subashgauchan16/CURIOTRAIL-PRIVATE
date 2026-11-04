@@ -155,6 +155,7 @@ export function ProgressScreen({ webgl, autoQuality, stageStatus, renderer }: Pr
               {radio('graphics', 'off', 'Off', '(2D map; every quest still works)')}
             </div>
             {!webgl && <p className="hint">This browser can’t show 3D graphics, so the 2D map is used.</p>}
+            <p className="hint">High detail shows the realistic island; Light shows the lighter block island. A change of island applies the next time CurioTrail loads.</p>
           </fieldset>
         </div>
 

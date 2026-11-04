@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "note": "Opt-in island variant (open the game with ?island=realistic). The streamed realistic Viking island shares island A's layout and coordinate frame, so destination positions and landmarks are island A's originals (git fc54e59). Only positions and texts are overridden; quests, unlock rules, NPC ids and dialogue come from world.json and explore.json unchanged. NPC/object 'at' and 'spawn' are Blender coordinates (x east, y north), like explore.json; destination positions are Three.js [x, z], like world.json.",
+  "note": "The realistic island is now the default island in world.json; this file is kept so ?island=realistic still names it explicitly (and the pipeline reads its spawn, positions and placements). The streamed realistic Viking island shares island A's layout and coordinate frame, so destination positions and landmarks are island A's originals (git fc54e59). Only positions and texts are overridden; quests, unlock rules, NPC ids and dialogue come from world.json and explore.json unchanged. NPC/object 'at' and 'spawn' are Blender coordinates (x east, y north), like explore.json; destination positions are Three.js [x, z], like world.json.",
   "island": {
     "files": {
       "low": "island-realistic/manifest.json"

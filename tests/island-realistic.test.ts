@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { applyIslandOverlay, islandVariant } from '../src/app/island-variant';
+import { applyIslandOverlay, chooseIslandVariant, islandVariant } from '../src/app/island-variant';
 import { placeContent, type ExploreContent } from '../src/app/explore-content';
 import { validateWorld } from '../src/engine/quest-validation';
 import type { IslandOverlay } from '../src/engine/types';
@@ -28,7 +28,32 @@ describe('island variants', () => {
       expect(d.position).toEqual(overlay.positions![d.id]);
     });
     expect(validateWorld(w, QUEST_IDS)).toEqual([]);
-    expect(world.island?.nav).toBe('nav-island-b.json');   // the default world is untouched
+    expect(world.island?.nav).toBe('nav-island-realistic.json');   // the realistic island is the default
+    expect(world.island?.streamed).toBe(overlay.island.streamed);
+    expect(world.destinations.map((d) => d.position)).toEqual(world.destinations.map((d) => overlay.positions![d.id]));
+  });
+
+  it('keeps island B available as ?island=b with its original positions', () => {
+    const b = readJson<IslandOverlay>('public/data/islands/b.json');
+    const w = applyIslandOverlay(world, b);
+    expect(w.island?.files).toEqual({ low: 'island-b/VikingIsland_Scene.glb' });
+    expect(w.island?.nav).toBe('nav-island-b.json');
+    expect(w.island?.streamed).toBeUndefined();
+    expect(Object.keys(b.positions!).sort()).toEqual(world.destinations.map((d) => d.id).sort());
+    expect(validateWorld(w, QUEST_IDS)).toEqual([]);
+    expect(existsSync('public/models/island-b/VikingIsland_Scene.glb')).toBe(true);
+  });
+
+  it('uses the light island B on light-graphics devices unless ?island= says otherwise', () => {
+    expect(world.island?.lightVariant).toBe('b');
+    expect(chooseIslandVariant('', world, 'auto', 'high')).toBeNull();          // capable device: realistic default
+    expect(chooseIslandVariant('', world, undefined, 'high')).toBeNull();
+    expect(chooseIslandVariant('', world, 'auto', 'low')).toBe('b');            // phone, weak or CPU-only WebGL
+    expect(chooseIslandVariant('', world, 'low', 'high')).toBe('b');            // player chose "Light"
+    expect(chooseIslandVariant('', world, 'high', 'low')).toBeNull();           // player chose "High detail"
+    expect(chooseIslandVariant('?island=realistic', world, 'low', 'low')).toBe('realistic');
+    expect(chooseIslandVariant('?island=b', world, 'high', 'high')).toBe('b');
+    expect(chooseIslandVariant('', { ...world, island: { ...world.island!, lightVariant: '../x' } }, 'low', 'low')).toBeNull();
   });
 
   it('rejects positions for unknown destinations', () => {

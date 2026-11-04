@@ -3,6 +3,8 @@
 4 November 2026 · branch `feature/viking-island-streaming` (from `feature/continuous-exploration` @ `d4a9477`) · nothing pushed or merged.
 The compatibility report written before integration is in [06-VIKING-ISLAND-STREAMING-COMPAT.md](06-VIKING-ISLAND-STREAMING-COMPAT.md).
 
+> **Update (4 Nov 2026):** the realistic island is now the default, with island B as `?island=b` and as the light-graphics fallback. See [08-REALISTIC-ISLAND-DEFAULT.md](08-REALISTIC-ISLAND-DEFAULT.md).
+
 ## 1. What this adds
 The chunked realistic Viking island (28 streamed 96 m tiles) runs inside the real game as an **opt-in island variant**. Add `?island=realistic` to the page URL, for example `http://localhost:5173/?island=realistic#/explore`.
 
