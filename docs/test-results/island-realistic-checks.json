@@ -1,0 +1,228 @@
+{
+ "ok": true,
+ "errors": [],
+ "warnings": [],
+ "budget": {
+  "chunkBytes": 1500000,
+  "chunkTrisL0": 60000,
+  "totalBytes": 25000000
+ },
+ "facts": {
+  "shared": {
+   "bytes": 3039892,
+   "tris": 16537,
+   "textures": 12
+  },
+  "sailUV": [
+   0,
+   1,
+   0,
+   1
+  ],
+  "chunks": [
+   {
+    "file": "chunk_0_2.glb",
+    "bytes": 597392,
+    "trisAllLods": 33922,
+    "trisL0": 25806,
+    "houses": 0
+   },
+   {
+    "file": "chunk_0_3.glb",
+    "bytes": 428256,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   },
+   {
+    "file": "chunk_0_4.glb",
+    "bytes": 402288,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   },
+   {
+    "file": "chunk_0_5.glb",
+    "bytes": 387704,
+    "trisAllLods": 20356,
+    "trisL0": 15280,
+    "houses": 0
+   },
+   {
+    "file": "chunk_1_1.glb",
+    "bytes": 485232,
+    "trisAllLods": 28793,
+    "trisL0": 21771,
+    "houses": 1
+   },
+   {
+    "file": "chunk_1_2.glb",
+    "bytes": 952452,
+    "trisAllLods": 44929,
+    "trisL0": 34367,
+    "houses": 9
+   },
+   {
+    "file": "chunk_1_3.glb",
+    "bytes": 668488,
+    "trisAllLods": 34070,
+    "trisL0": 25956,
+    "houses": 0
+   },
+   {
+    "file": "chunk_1_4.glb",
+    "bytes": 629740,
+    "trisAllLods": 31749,
+    "trisL0": 24080,
+    "houses": 1
+   },
+   {
+    "file": "chunk_1_5.glb",
+    "bytes": 422440,
+    "trisAllLods": 20356,
+    "trisL0": 15280,
+    "houses": 0
+   },
+   {
+    "file": "chunk_2_0.glb",
+    "bytes": 412448,
+    "trisAllLods": 26742,
+    "trisL0": 20142,
+    "houses": 1
+   },
+   {
+    "file": "chunk_2_1.glb",
+    "bytes": 648228,
+    "trisAllLods": 35469,
+    "trisL0": 27043,
+    "houses": 1
+   },
+   {
+    "file": "chunk_2_2.glb",
+    "bytes": 1152952,
+    "trisAllLods": 50234,
+    "trisL0": 38294,
+    "houses": 14
+   },
+   {
+    "file": "chunk_2_3.glb",
+    "bytes": 638116,
+    "trisAllLods": 29640,
+    "trisL0": 22460,
+    "houses": 0
+   },
+   {
+    "file": "chunk_2_4.glb",
+    "bytes": 645976,
+    "trisAllLods": 29862,
+    "trisL0": 22551,
+    "houses": 3
+   },
+   {
+    "file": "chunk_2_5.glb",
+    "bytes": 650268,
+    "trisAllLods": 31664,
+    "trisL0": 24155,
+    "houses": 1
+   },
+   {
+    "file": "chunk_3_0.glb",
+    "bytes": 379252,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   },
+   {
+    "file": "chunk_3_1.glb",
+    "bytes": 670236,
+    "trisAllLods": 36456,
+    "trisL0": 27829,
+    "houses": 2
+   },
+   {
+    "file": "chunk_3_2.glb",
+    "bytes": 1260900,
+    "trisAllLods": 58273,
+    "trisL0": 44764,
+    "houses": 14
+   },
+   {
+    "file": "chunk_3_3.glb",
+    "bytes": 780156,
+    "trisAllLods": 37567,
+    "trisL0": 28696,
+    "houses": 2
+   },
+   {
+    "file": "chunk_3_4.glb",
+    "bytes": 486528,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   },
+   {
+    "file": "chunk_3_5.glb",
+    "bytes": 406352,
+    "trisAllLods": 20356,
+    "trisL0": 15280,
+    "houses": 0
+   },
+   {
+    "file": "chunk_4_0.glb",
+    "bytes": 434276,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   },
+   {
+    "file": "chunk_4_1.glb",
+    "bytes": 448424,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   },
+   {
+    "file": "chunk_4_2.glb",
+    "bytes": 721176,
+    "trisAllLods": 36392,
+    "trisL0": 27742,
+    "houses": 3
+   },
+   {
+    "file": "chunk_4_3.glb",
+    "bytes": 523152,
+    "trisAllLods": 26514,
+    "trisL0": 19954,
+    "houses": 1
+   },
+   {
+    "file": "chunk_4_4.glb",
+    "bytes": 425500,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   },
+   {
+    "file": "chunk_5_2.glb",
+    "bytes": 395164,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   },
+   {
+    "file": "chunk_5_3.glb",
+    "bytes": 399928,
+    "trisAllLods": 25536,
+    "trisL0": 19200,
+    "houses": 0
+   }
+  ],
+  "instances": {
+   "trees": 215,
+   "ships": 8,
+   "rocks": 41
+  },
+  "totalBytes": 19492916
+ },
+ "checkedAt": "2026-11-04T17:19:45.689Z"
+}

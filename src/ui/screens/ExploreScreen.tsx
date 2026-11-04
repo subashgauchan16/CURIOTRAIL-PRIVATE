@@ -12,6 +12,8 @@ import { StatusChip } from './MapScreen';
 
 /** Where the Pathfinder was, so leaving for a quest and coming back resumes on the same spot (this tab only). */
 export const PLAYER_KEY = 'curiotrail.explore.player';
+/** One saved spot per walk grid, so a position on one island never lands the player in another island's sea. Island B keeps the original key. */
+export function playerKey(nav?: string) { return !nav || nav === 'nav-island-b.json' ? PLAYER_KEY : `${PLAYER_KEY}:${nav}`; }
 const CONTROLS_KEY = 'curiotrail.explore.controls-seen';
 
 type Panel =
@@ -27,9 +29,9 @@ interface Props {
   webgl: boolean;
 }
 
-function readSaved(): { x: number; z: number; heading: number } | null {
+function readSaved(key: string): { x: number; z: number; heading: number } | null {
   try {
-    const v = JSON.parse(sessionStorage.getItem(PLAYER_KEY) ?? 'null');
+    const v = JSON.parse(sessionStorage.getItem(key) ?? 'null');
     return v && Number.isFinite(v.x) && Number.isFinite(v.z) ? v : null;
   } catch { return null; }
 }
@@ -65,7 +67,7 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
 
   useEffect(() => {
     if (!world.island?.nav) return;
-    loadExplore(world.island.nav).then(setData).catch(() => say('The island’s paths could not be loaded. Use the map instead.'));
+    loadExplore(world.island.nav, world.island.placements).then(setData).catch(() => say('The island’s paths could not be loaded. Use the map instead.'));
   }, [world.island?.nav, say]);
 
   // Wait for the 3D world, the Pathfinder and the walk grid, then place the player.
@@ -76,7 +78,7 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
       const r = renderer.current;
       if (!r || !r.explore.ready || cancelled) return;
       window.clearInterval(id);
-      const saved = readSaved();
+      const saved = readSaved(playerKey(world.island?.nav));
       if (saved) r.explore.place(saved.x, saved.z, saved.heading);
       else {
         const s = fromBlender(data.nav.spawn.x, data.nav.spawn.y);
@@ -93,7 +95,7 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
       const r = renderer.current;
       if (r?.explore.state) {
         const { x, z, heading } = r.explore.state;
-        store(PLAYER_KEY, JSON.stringify({ x, z, heading }));
+        store(playerKey(world.island?.nav), JSON.stringify({ x, z, heading }));
       }
       if (r) r.explore.onTarget = undefined;
     };
@@ -185,7 +187,7 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
     const quest = nextQuestAt(dest, quests, progress);
     if (!quest) { say(`You’ve completed every quest at ${dest.name}. Replay them from the map.`); return; }
     const s = renderer.current?.explore.state;
-    if (s) store(PLAYER_KEY, JSON.stringify({ x: s.x, z: s.z, heading: s.heading }));
+    if (s) store(playerKey(world.island?.nav), JSON.stringify({ x: s.x, z: s.z, heading: s.heading }));
     navigate(`/quest/${quest.id}`);
   }, [target, data, world, quests, progress, renderer, say]);
 

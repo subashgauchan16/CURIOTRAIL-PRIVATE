@@ -1,0 +1,656 @@
+{
+  "date": "2026-11-04T17:28:33.874Z",
+  "base": "http://127.0.0.1:5180/?island=realistic",
+  "gpu": true,
+  "renderer": "ANGLE (Intel, Intel(R) Arc(TM) 130V GPU (8GB) (0x000064A0) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "passed": 9,
+  "failed": 0,
+  "perf": {
+    "firstView": {
+      "readyMs": 3834,
+      "bytes": 8096947,
+      "tilesLoaded": 16
+    },
+    "allTiles": {
+      "bytes": 9747719,
+      "loaded": 28,
+      "loads": 28
+    },
+    "exploreVillage": {
+      "fps": 60.1,
+      "p95ms": 16.7,
+      "drawCalls": 157,
+      "triangles": 540238,
+      "geometries": 268,
+      "textures": 70,
+      "tiles": {
+        "tiles": 28,
+        "loaded": 28,
+        "loading": 0,
+        "loads": 38,
+        "unloads": 10,
+        "loadedBytes": 20791640,
+        "sharedBytes": 3039892
+      }
+    },
+    "map": {
+      "fps": 60.1,
+      "p95ms": 16.8,
+      "drawCalls": 163,
+      "triangles": 227192,
+      "geometries": 273,
+      "textures": 70,
+      "tiles": {
+        "tiles": 28,
+        "loaded": 28,
+        "loading": 0,
+        "loads": 38,
+        "unloads": 10,
+        "loadedBytes": 20791640,
+        "sharedBytes": 3039892
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "R1",
+      "title": "Load the realistic island and spawn the Pathfinder on walkable ground (first view)",
+      "status": "pass",
+      "ms": 4842,
+      "detail": {
+        "readyMs": 3834,
+        "bytes": 8096947,
+        "tilesLoaded": 16
+      }
+    },
+    {
+      "id": "R2",
+      "title": "All 28 tiles and the shared library load with no failed requests",
+      "status": "pass",
+      "ms": 92,
+      "detail": {
+        "bytes": 9747719,
+        "loaded": 28,
+        "loads": 28
+      }
+    },
+    {
+      "id": "R3",
+      "title": "Walk across a tile boundary (x = 0, -96 or 96) without a step, gap or stop",
+      "status": "pass",
+      "ms": 8202,
+      "detail": {
+        "start": {
+          "x": -11.5,
+          "z": -40.5,
+          "edge": 0
+        },
+        "end": {
+          "x": 15.34,
+          "y": 12.47,
+          "z": -40.5
+        },
+        "samples": 14
+      }
+    },
+    {
+      "id": "R4",
+      "title": "Distant tiles unload and reload as the player moves",
+      "status": "pass",
+      "ms": 6669,
+      "detail": {
+        "corners": {
+          "ne": {
+            "x": 146.5,
+            "z": -233.5,
+            "k": 380
+          },
+          "sw": {
+            "x": -197.5,
+            "z": 250.5,
+            "k": -448
+          }
+        },
+        "before": {
+          "tiles": 28,
+          "loaded": 23,
+          "loading": 0,
+          "loads": 28,
+          "unloads": 5,
+          "loadedBytes": 16453024,
+          "sharedBytes": 3039892
+        },
+        "far": {
+          "tiles": 28,
+          "loaded": 23,
+          "loading": 0,
+          "loads": 33,
+          "unloads": 10,
+          "loadedBytes": 18722076,
+          "sharedBytes": 3039892,
+          "geometries": 214,
+          "textures": 64
+        },
+        "back": {
+          "tiles": 28,
+          "loaded": 28,
+          "loading": 0,
+          "loads": 38,
+          "unloads": 10,
+          "loadedBytes": 20791640,
+          "sharedBytes": 3039892,
+          "geometries": 218,
+          "textures": 67
+        }
+      }
+    },
+    {
+      "id": "R5",
+      "title": "Terrain height follows the walk grid; buildings and the sea block the player",
+      "status": "pass",
+      "ms": 18498,
+      "detail": {
+        "stoppedAtHallX": 98.7,
+        "beach": {
+          "x": -11.5,
+          "y": 6.17,
+          "z": 207.68,
+          "heading": 0,
+          "speed": 3.8
+        }
+      }
+    },
+    {
+      "id": "R6",
+      "title": "Materials: textured buildings and terrain, striped sails, alpha-tested trees, tinted ships",
+      "status": "pass",
+      "ms": 9441,
+      "detail": {
+        "(unnamed)": {
+          "map": false,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 106
+        },
+        "OPT_Bark": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 4
+        },
+        "OPT_Needles": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0.45,
+          "vertexColors": false,
+          "count": 4
+        },
+        "OPT_ShipWood": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 1
+        },
+        "OPT_Sail": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 1
+        },
+        "OPT_Rock": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 1
+        },
+        "CHK_Terrain_3_2": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "OPT_Thatch": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 26
+        },
+        "OPT_WoodLight": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 52
+        },
+        "OPT_Stone": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 22
+        },
+        "CHK_Terrain_3_3": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_2_2": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_2_3": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "OPT_WoodDark": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 6
+        },
+        "CHK_Terrain_3_1": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_2_1": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_4_2": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_1_2": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_3_4": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_4_3": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_1_3": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_2_4": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_1_1": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_4_4": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_1_4": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_0_3": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_0_2": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_5_3": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_1_5": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_0_4": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_0_5": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_2_5": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_3_5": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_3_0": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_4_1": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_4_0": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_2_0": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "CHK_Terrain_5_2": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 3
+        },
+        "MAT_Pathfinder_Brows": {
+          "map": false,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 1
+        },
+        "MI_Eyes": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 3
+        },
+        "MI_Peasant.001": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 2
+        },
+        "MI_Peasant": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 2
+        },
+        "MI_Peasant.003": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 2
+        },
+        "MI_Peasant.002": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 2
+        },
+        "MAT_ZeusBand": {
+          "map": false,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 1
+        },
+        "MAT_ZeusBand_Glow": {
+          "map": false,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 1
+        },
+        "MAT_Pathfinder_Hair": {
+          "map": false,
+          "uv": false,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 1
+        },
+        "MAT_Pathfinder_Leather": {
+          "map": false,
+          "uv": false,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 2
+        },
+        "MI_Superhero_Female": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 3
+        },
+        "MAT_Mira_Brows": {
+          "map": false,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 1
+        },
+        "MI_Ranger.001": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 2
+        },
+        "MI_Ranger": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 3
+        },
+        "MI_Ranger.003": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 1
+        },
+        "MI_Ranger.002": {
+          "map": true,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 1
+        },
+        "MAT_Mira_Hair": {
+          "map": false,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 14
+        },
+        "MAT_Tove_Brows": {
+          "map": false,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": true,
+          "count": 1
+        },
+        "MAT_Tove_Hair": {
+          "map": false,
+          "uv": true,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 14
+        },
+        "MAT_Tove_Leather": {
+          "map": false,
+          "uv": false,
+          "alphaTest": 0,
+          "vertexColors": false,
+          "count": 1
+        }
+      }
+    },
+    {
+      "id": "R7",
+      "title": "NPC dialogue and a quest trigger work on the realistic island (existing systems)",
+      "status": "pass",
+      "ms": 4777,
+      "detail": {
+        "questRoute": "#/quest/missing-signal",
+        "returnedTo": {
+          "x": -11.5,
+          "y": 8.44,
+          "z": 172.5,
+          "heading": 3.14,
+          "speed": 0
+        }
+      }
+    },
+    {
+      "id": "R8",
+      "title": "Performance in exploration and on the map (this machine)",
+      "status": "pass",
+      "ms": 11162,
+      "detail": {
+        "firstView": {
+          "readyMs": 3834,
+          "bytes": 8096947,
+          "tilesLoaded": 16
+        },
+        "allTiles": {
+          "bytes": 9747719,
+          "loaded": 28,
+          "loads": 28
+        },
+        "exploreVillage": {
+          "fps": 60.1,
+          "p95ms": 16.7,
+          "drawCalls": 157,
+          "triangles": 540238,
+          "geometries": 268,
+          "textures": 70,
+          "tiles": {
+            "tiles": 28,
+            "loaded": 28,
+            "loading": 0,
+            "loads": 38,
+            "unloads": 10,
+            "loadedBytes": 20791640,
+            "sharedBytes": 3039892
+          }
+        },
+        "map": {
+          "fps": 60.1,
+          "p95ms": 16.8,
+          "drawCalls": 163,
+          "triangles": 227192,
+          "geometries": 273,
+          "textures": 70,
+          "tiles": {
+            "tiles": 28,
+            "loaded": 28,
+            "loading": 0,
+            "loads": 38,
+            "unloads": 10,
+            "loadedBytes": 20791640,
+            "sharedBytes": 3039892
+          }
+        }
+      }
+    },
+    {
+      "id": "R9",
+      "title": "No console errors and no missing assets",
+      "status": "pass",
+      "ms": 0,
+      "detail": {
+        "errors": 0,
+        "failed": 0
+      }
+    }
+  ]
+}
