@@ -94,6 +94,7 @@ export function CompleteScreen({ questId, feedbackUrl }: { questId: string; feed
           ) : (
             <a className="btn btn-primary btn-lg" href="#/map">Explore the map</a>
           )}
+          {world.island?.nav && <a className="btn btn-primary btn-lg" href="#/explore">Return to the island</a>}
           <a className="btn btn-secondary btn-lg" href="#/map">Back to the map</a>
           <button type="button" className="btn btn-ghost btn-lg" onClick={() => { update((p) => withReplay(p, questId)); navigate(`/quest/${questId}`); }}>Replay quest</button>
         </div>

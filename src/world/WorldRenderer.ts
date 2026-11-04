@@ -7,9 +7,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PALETTE, createClouds, createSky, createSparkles, createWater, setWaterAnimated, updateClouds, type Water } from './environment';
 import { createCharacter, type Character, type Pose } from './characters';
 import type { CharacterModel } from './character-model';
+import { ExploreRuntime, type ExploreView } from './explore-runtime';
 
 import type { Quality } from './capabilities';
 
@@ -29,7 +31,9 @@ export type CameraMode =
   | { kind: 'focus'; destination: string; character?: string; pose?: Pose; panel?: 'right' | 'bottom' }
   | { kind: 'celebrate'; destination: string; character?: string }
   // A fixed camera, used by development checks of rigged characters.
-  | { kind: 'inspect'; position: [number, number, number]; target: [number, number, number] };
+  | { kind: 'inspect'; position: [number, number, number]; target: [number, number, number] }
+  // Free exploration: the Pathfinder walks the island with a follow or first-person camera.
+  | { kind: 'explore'; view: ExploreView };
 
 export interface LoadState {
   phase: 'loading' | 'refining' | 'ready' | 'error';
@@ -44,6 +48,10 @@ export interface WorldOptions {
   modelBase: string; // e.g. "./models/"
   /** Island files under modelBase; defaults to island-low.glb then island-high.glb. */
   islandFiles?: { low: string; high?: string };
+  /** World units per island-A block: 1 for the original island, 0.25 for the metre-scale island B. */
+  scale?: number;
+  /** Scale of the procedural quest characters (they are about 1.8 units tall at scale 1). */
+  characterScale?: number;
   onSelect?: (id: string) => void;
   onHover?: (id: string | null) => void;
   onLoad?: (state: LoadState) => void;
@@ -81,7 +89,8 @@ export class WorldRenderer {
   private disposed = false;
   private options: WorldOptions;
   private island = new THREE.Group();
-  private islandMeshes: THREE.Mesh[] = [];
+  private islandMeshes: THREE.Mesh[] = [];   // ray tests (ground, camera obstruction, markers)
+  private islandChunks: THREE.Mesh[] = [];   // merged render geometry, when the island was merged
   private islandMaterial: THREE.MeshLambertMaterial;
   private shimmer = { value: 0 };
   private water: Water;
@@ -104,18 +113,27 @@ export class WorldRenderer {
   private viewOffset: 'left' | 'right' | 'bottom' | null = null;
   private actors = new Set<CharacterModel>();
   private environment: THREE.Texture;
+  /** Distances, marker sizes and camera framing were authored for island A; `s` rescales them. */
+  private readonly s: number;
+  private readonly charScale: number;
+  /** Player, persistent NPCs, input and the follow camera for free exploration. */
+  readonly explore: ExploreRuntime;
+  private borrowedNpc: string | null = null;
 
   constructor(private canvas: HTMLCanvasElement, options: WorldOptions) {
     this.options = options;
+    this.s = options.scale ?? 1;
+    this.charScale = options.characterScale ?? 2.2;
+    const s = this.s;
     const high = options.quality === 'high';
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: high, powerPreference: high ? 'high-performance' : 'low-power' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, high ? 2 : 1.25));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-    this.camera = new THREE.PerspectiveCamera(42, 1, 1, 6000);
-    this.camera.position.set(-330, 300, 470);
+    this.camera = new THREE.PerspectiveCamera(42, 1, s === 1 ? 1 : 0.05, 6000);
+    this.camera.position.set(-330 * s, 300 * s, 470 * s);
 
-    this.scene.fog = new THREE.Fog(PALETTE.fog, 900, 3200);
+    this.scene.fog = new THREE.Fog(PALETTE.fog, 900 * s, 3200 * s);
     this.scene.add(createSky());
     this.scene.add(new THREE.HemisphereLight('#eaf6ff', '#4b6b4e', 1.5));
     const sun = new THREE.DirectionalLight('#fff4dc', 2.1);
@@ -157,11 +175,11 @@ export class WorldRenderer {
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.enableDamping = !options.reducedMotion;
     this.controls.dampingFactor = 0.08;
-    this.controls.minDistance = 60;
-    this.controls.maxDistance = 1100;
+    this.controls.minDistance = 60 * s;
+    this.controls.maxDistance = 1100 * s;
     this.controls.maxPolarAngle = 1.32;
     this.controls.minPolarAngle = 0.25;
-    this.controls.target.set(0, 20, 0);
+    this.controls.target.set(0, 20 * s, 0);
     this.controls.enablePan = true;
     this.controls.screenSpacePanning = false;
     this.controls.enabled = false;
@@ -175,6 +193,16 @@ export class WorldRenderer {
       this.options.onLoad?.({ phase: 'error', progress: 0, lod: this.lod, error: 'The graphics context was lost.' });
     });
     this.clock.connect(document); // pauses the timer while the tab is hidden
+
+    this.explore = new ExploreRuntime({
+      scene: this.scene,
+      camera: this.camera,
+      canvas,
+      islandMeshes: () => this.islandMeshes,
+      addActor: (a) => this.addActor(a),
+      removeActor: (a) => this.removeActor(a),
+      modelBase: options.modelBase,
+    });
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas);
@@ -231,12 +259,71 @@ export class WorldRenderer {
       }
     });
     for (const old of this.islandMeshes) old.geometry.dispose();
+    for (const old of this.islandChunks) old.geometry.dispose();
+    this.islandChunks = [];
     this.island.clear();
-    this.island.add(root);
     root.updateMatrixWorld(true);
+    // An island exported object by object (island B: ~215 meshes) is drawn as a grid of merged
+    // chunks (one material, far fewer draw calls). The original small meshes are kept, off-scene,
+    // for ray tests: their tight bounds keep per-frame camera checks cheap.
+    const merged = meshes.length > 64 ? this.mergeIntoChunks(meshes, 8) : null;
+    if (merged) {
+      for (const chunk of merged) this.island.add(chunk);
+      this.islandChunks = merged;
+    } else {
+      this.island.add(root);
+    }
     this.islandMeshes = meshes;
     this.lod = lod;
     this.placeMarkers();
+  }
+
+  /** Bakes world transforms and merges meshes into an n × n grid of chunks (positions, normals, colours). */
+  private mergeIntoChunks(meshes: THREE.Mesh[], n: number): THREE.Mesh[] {
+    const box = new THREE.Box3();
+    meshes.forEach((m) => box.expandByObject(m));
+    const size = box.getSize(new THREE.Vector3());
+    const cells = new Map<number, THREE.BufferGeometry[]>();
+    const centre = new THREE.Vector3();
+    for (const mesh of meshes) {
+      const src = mesh.geometry;
+      const count = src.attributes.position.count;
+      const g = new THREE.BufferGeometry();
+      const copy = (attr: THREE.BufferAttribute | THREE.InterleavedBufferAttribute | undefined, size: number, fill: number) => {
+        const out = new Float32Array(count * size);
+        for (let i = 0; i < count; i += 1) {
+          out[i * size] = attr ? attr.getX(i) : fill;
+          out[i * size + 1] = attr ? attr.getY(i) : fill;
+          out[i * size + 2] = attr ? attr.getZ(i) : fill;
+        }
+        return new THREE.BufferAttribute(out, size);
+      };
+      g.setAttribute('position', copy(src.attributes.position, 3, 0));
+      g.setAttribute('normal', copy(src.attributes.normal, 3, 0));
+      g.setAttribute('color', copy(src.attributes.color, 3, 1));
+      g.setIndex(src.index ? Array.from(src.index.array) : [...Array(count).keys()]);
+      if (!src.attributes.normal) g.computeVertexNormals();
+      g.applyMatrix4(mesh.matrixWorld);
+      g.computeBoundingBox();
+      g.boundingBox!.getCenter(centre);
+      const cx = THREE.MathUtils.clamp(Math.floor(((centre.x - box.min.x) / (size.x || 1)) * n), 0, n - 1);
+      const cz = THREE.MathUtils.clamp(Math.floor(((centre.z - box.min.z) / (size.z || 1)) * n), 0, n - 1);
+      const key = cz * n + cx;
+      if (!cells.has(key)) cells.set(key, []);
+      cells.get(key)!.push(g);
+    }
+    const chunks: THREE.Mesh[] = [];
+    for (const [key, parts] of cells) {
+      const geometry = mergeGeometries(parts, false);
+      parts.forEach((p) => p.dispose());
+      if (!geometry) continue;
+      geometry.computeBoundingSphere();
+      const chunk = new THREE.Mesh(geometry, this.islandMaterial);
+      chunk.name = `island-chunk-${key}`;
+      chunk.matrixAutoUpdate = false;
+      chunks.push(chunk);
+    }
+    return chunks;
   }
 
   /** Height of the island surface at (x, z), or null over open water. */
@@ -272,6 +359,7 @@ export class WorldRenderer {
   private createMarker(d: DestinationView): Marker {
     const group = new THREE.Group();
     group.name = `marker-${d.id}`;
+    group.scale.setScalar(this.s);
     const ring = new THREE.Mesh(new THREE.TorusGeometry(7, 0.8, 8, 40), new THREE.MeshBasicMaterial({ color: '#f2b134' }));
     ring.rotation.x = Math.PI / 2;
     const gem = new THREE.Mesh(new THREE.OctahedronGeometry(3.2, 0), new THREE.MeshLambertMaterial({ color: '#f2b134', emissive: '#7a5200', flatShading: true }));
@@ -316,7 +404,18 @@ export class WorldRenderer {
     const same = JSON.stringify(mode) === JSON.stringify(this.mode);
     this.mode = mode;
     if (same) return;
-    const wantCharacter = (mode.kind === 'focus' || mode.kind === 'celebrate') && mode.character ? mode.character : null;
+    if (mode.kind === 'explore') { this.flight = null; this.explore.enter(mode.view); } else this.explore.exit();
+    let wantCharacter = (mode.kind === 'focus' || mode.kind === 'celebrate') && mode.character ? mode.character : null;
+    // A quest character who exists as a rigged NPC is walked to the quest spot instead of
+    // being drawn with primitives; the others keep the procedural figure for now.
+    const npc = wantCharacter && this.explore.npcs.has(wantCharacter) ? wantCharacter : null;
+    if (npc !== this.borrowedNpc) { this.explore.release(); this.borrowedNpc = npc; }
+    if (npc) {
+      wantCharacter = null;
+      const model = this.explore.npcs.get(npc)!.model;
+      if (mode.kind === 'focus' && mode.pose === 'talk') model.gesture('Talk');
+      if (mode.kind === 'focus' && (mode.pose === 'point' || mode.pose === 'wave')) model.gesture('Interact');
+    }
     if (wantCharacter !== this.characterKey) {
       if (this.character) {
         this.scene.remove(this.character.group);
@@ -340,17 +439,23 @@ export class WorldRenderer {
   private characterSpot(destination: string): THREE.Vector3 {
     const marker = this.markers.get(destination);
     const base = marker ? marker.ground.clone() : new THREE.Vector3();
-    const x = base.x + 9;
-    const z = base.z + 7;
+    const x = base.x + 9 * this.s;
+    const z = base.z + 7 * this.s;
     const y = this.surfaceHeight(x, z) ?? base.y;
     return new THREE.Vector3(x, y, z);
   }
 
   private placeCharacter() {
-    if (!this.character || (this.mode.kind !== 'focus' && this.mode.kind !== 'celebrate')) return;
+    if (this.mode.kind !== 'focus' && this.mode.kind !== 'celebrate') return;
+    if (this.borrowedNpc) {
+      const spot = this.characterSpot(this.mode.destination);
+      this.explore.borrow(this.borrowedNpc, spot, this.camera.position);
+      return;
+    }
+    if (!this.character) return;
     const spot = this.characterSpot(this.mode.destination);
     this.character.group.position.copy(spot);
-    this.character.group.scale.setScalar(2.2);
+    this.character.group.scale.setScalar(this.charScale);
   }
 
   private applyMode(animate: boolean) {
@@ -360,36 +465,39 @@ export class WorldRenderer {
     this.controls.enabled = mode.kind === 'map';
     this.controls.autoRotate = mode.kind === 'overview' && !this.options.reducedMotion;
     this.controls.autoRotateSpeed = 0.35;
-    this.viewOffset = mode.kind === 'celebrate' || mode.kind === 'inspect' ? null : mode.panel ?? null;
+    this.viewOffset = mode.kind === 'celebrate' || mode.kind === 'inspect' || mode.kind === 'explore' ? null : mode.panel ?? null;
     this.resize();
+    if (mode.kind === 'explore') { this.controls.enabled = false; this.controls.autoRotate = false; return; }
     // Map-scale zoom limits would push a close character camera 60 units away.
-    this.controls.minDistance = mode.kind === 'inspect' ? 0.5 : 60;
+    this.controls.minDistance = mode.kind === 'inspect' ? 0.5 : 60 * this.s;
     if (mode.kind === 'inspect') {
       pos = new THREE.Vector3(...mode.position);
       target = new THREE.Vector3(...mode.target);
     } else if (mode.kind === 'overview') {
-      target = new THREE.Vector3(0, 25, 0);
+      target = new THREE.Vector3(0, 25 * this.s, 0);
       const dir = this.camera.position.clone().sub(this.controls.target).setY(0).normalize();
       if (!Number.isFinite(dir.x) || dir.lengthSq() < 0.5) dir.set(-0.6, 0, 0.8);
-      pos = target.clone().add(dir.multiplyScalar(560)).setY(330);
+      pos = target.clone().add(dir.multiplyScalar(560 * this.s)).setY(330 * this.s);
     } else if (mode.kind === 'map') {
       const marker = mode.selected ? this.markers.get(mode.selected) : undefined;
       if (marker) {
-        target = marker.ground.clone().add(new THREE.Vector3(0, 10, 0));
+        target = marker.ground.clone().add(new THREE.Vector3(0, 10 * this.s, 0));
         const dir = this.camera.position.clone().sub(target).setY(0).normalize();
         if (dir.lengthSq() < 0.5) dir.set(0, 0, 1);
-        pos = target.clone().add(dir.multiplyScalar(190)).add(new THREE.Vector3(0, 140, 0));
+        pos = target.clone().add(dir.multiplyScalar(190 * this.s)).add(new THREE.Vector3(0, 140 * this.s, 0));
       } else {
-        target = new THREE.Vector3(0, 20, 0);
+        target = new THREE.Vector3(0, 20 * this.s, 0);
         const dir = this.camera.position.clone().sub(this.controls.target).setY(0).normalize();
         if (dir.lengthSq() < 0.5) dir.set(-0.6, 0, 0.8);
-        pos = target.clone().add(dir.multiplyScalar(520)).setY(380);
+        pos = target.clone().add(dir.multiplyScalar(520 * this.s)).setY(380 * this.s);
       }
     } else {
       // The light island is coarser up close, so frame from further back.
-      const distance = (mode.kind === 'celebrate' ? 40 : 28) * (this.lod === 'low' ? 1.6 : 1);
+      // life-size characters on a metre-scale island are framed closer than the original's 4-block figures
+      const distance = (mode.kind === 'celebrate' ? 40 : 28) * (this.charScale / 2.2) * (this.s === 1 ? (this.lod === 'low' ? 1.6 : 1) : 0.55);
       ({ pos, target } = this.focusView(mode.destination, distance));
       if (this.character) this.character.group.lookAt(pos.x, this.character.group.position.y, pos.z);
+      if (this.borrowedNpc) this.explore.borrow(this.borrowedNpc, this.characterSpot(mode.destination), pos);
     }
     this.flyTo(pos, target, animate);
   }
@@ -409,20 +517,21 @@ export class WorldRenderer {
     const marker = this.markers.get(destination);
     const toMarker = marker ? marker.ground.clone().sub(spot).setY(0).normalize() : new THREE.Vector3(-1, 0, 0);
     if (toMarker.lengthSq() < 0.5) toMarker.set(-1, 0, 0);
-    const head = spot.clone().add(new THREE.Vector3(0, 4.5, 0));
-    const target = spot.clone().add(new THREE.Vector3(0, 3.2, 0)).add(toMarker.clone().multiplyScalar(4));
+    const k = this.charScale / 2.2;                  // framing scales with the character
+    const head = spot.clone().add(new THREE.Vector3(0, 4.5 * k, 0));
+    const target = spot.clone().add(new THREE.Vector3(0, 3.2 * k, 0)).add(toMarker.clone().multiplyScalar(4 * k));
     const baseAngle = Math.atan2(-toMarker.z, -toMarker.x) + 0.9; // behind the character, off to one side
     let best: THREE.Vector3 | null = null;
     for (let k = 0; k < 12 && !best; k += 1) {
       const angle = baseAngle + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 6);
       const pos = head.clone().add(new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle)).multiplyScalar(distance)).add(new THREE.Vector3(0, distance * 0.42, 0));
       const ground = this.surfaceHeight(pos.x, pos.z);
-      if (ground !== null && pos.y < ground + 4) continue;
+      if (ground !== null && pos.y < ground + 4 * k) continue;
       if (!this.islandMeshes.length) { best = pos; break; }
       const toHead = head.clone().sub(pos);
       const length = toHead.length();
       this.raycaster.set(pos, toHead.normalize());
-      this.raycaster.far = length - 1.5;
+      this.raycaster.far = length - 1.5 * k;
       if (!this.raycaster.intersectObjects(this.islandMeshes, false).length) best = pos;
     }
     if (!best) best = head.clone().add(new THREE.Vector3(Math.cos(baseAngle), 1.4, Math.sin(baseAngle)).multiplyScalar(distance));
@@ -445,7 +554,7 @@ export class WorldRenderer {
       toPos: pos,
       toTarget: target,
       start: this.clock.getElapsed(),
-      duration: Math.min(2.4, 0.9 + distance / 600),
+      duration: Math.min(2.4, 0.9 + distance / (600 * this.s)),
     };
   }
 
@@ -500,10 +609,10 @@ export class WorldRenderer {
     const gold = new THREE.Color('#f2b134');
     const teal = new THREE.Color('#2dd4bf');
     for (let i = 0; i < count; i += 1) {
-      positions.set([marker.ground.x, marker.ground.y + 18, marker.ground.z], i * 3);
+      positions.set([marker.ground.x, marker.ground.y + 18 * this.s, marker.ground.z], i * 3);
       const a = Math.random() * Math.PI * 2;
-      const up = 12 + Math.random() * 18;
-      const out = 6 + Math.random() * 14;
+      const up = (12 + Math.random() * 18) * this.s;
+      const out = (6 + Math.random() * 14) * this.s;
       velocities.set([Math.cos(a) * out, up, Math.sin(a) * out], i * 3);
       (i % 2 ? gold : teal).toArray(colors, i * 3);
     }
@@ -511,7 +620,7 @@ export class WorldRenderer {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.userData.velocities = velocities;
-    const points = new THREE.Points(geometry, new THREE.PointsMaterial({ size: 2.2, vertexColors: true, transparent: true }));
+    const points = new THREE.Points(geometry, new THREE.PointsMaterial({ size: 2.2 * this.s, vertexColors: true, transparent: true }));
     this.scene.add(points);
     this.burst = { points, start: this.clock.getElapsed() };
   }
@@ -596,11 +705,12 @@ export class WorldRenderer {
       const k = ease(t);
       this.camera.position.lerpVectors(this.flight.fromPos, this.flight.toPos, k);
       // Arc upward mid-flight for a smoother sense of travel.
-      this.camera.position.y += Math.sin(Math.PI * k) * Math.min(120, this.flight.fromPos.distanceTo(this.flight.toPos) * 0.15);
+      this.camera.position.y += Math.sin(Math.PI * k) * Math.min(120 * this.s, this.flight.fromPos.distanceTo(this.flight.toPos) * 0.15);
       this.controls.target.lerpVectors(this.flight.fromTarget, this.flight.toTarget, k);
       if (t >= 1) this.flight = null;
     }
-    this.controls.update(delta);
+    if (this.mode.kind !== 'explore') this.controls.update(delta);
+    this.explore.update(delta, still);
 
     if (!still) {
       this.water.update(time);
@@ -623,7 +733,7 @@ export class WorldRenderer {
       const attr = this.burst.points.geometry.getAttribute('position') as THREE.BufferAttribute;
       const v = this.burst.points.geometry.userData.velocities as Float32Array;
       for (let i = 0; i < attr.count; i += 1) {
-        v[i * 3 + 1] -= 22 * delta;
+        v[i * 3 + 1] -= 22 * this.s * delta;
         attr.setXYZ(i, attr.getX(i) + v[i * 3] * delta, attr.getY(i) + v[i * 3 + 1] * delta, attr.getZ(i) + v[i * 3 + 2] * delta);
       }
       attr.needsUpdate = true;
@@ -649,7 +759,7 @@ export class WorldRenderer {
     const placed: { x: number; y: number; w: number; h: number; el: HTMLElement }[] = [];
     for (const marker of this.markers.values()) {
       if (!marker.label) continue;
-      this.projected.copy(marker.ground).setY(marker.ground.y + 26).project(this.camera);
+      this.projected.copy(marker.ground).setY(marker.ground.y + 26 * this.s).project(this.camera);
       const visible = this.projected.z < 1 && Math.abs(this.projected.x) < 1.1 && Math.abs(this.projected.y) < 1.1;
       marker.label.style.visibility = visible ? 'visible' : 'hidden';
       if (visible) {
@@ -689,9 +799,10 @@ export class WorldRenderer {
       lod: this.lod,
       pixelRatio: this.renderer.getPixelRatio(),
       markers: [...this.markers.values()].map((m) => ({ id: m.id, y: Math.round(m.ground.y * 10) / 10, status: m.status })),
-      camera: this.camera.position.toArray().map((v) => Math.round(v)),
-      character: this.characterKey,
+      camera: this.camera.position.toArray().map((v) => Math.round(v * 100) / 100),   // cm: island B is metre-scale
+      character: this.borrowedNpc ?? this.characterKey,
       mode: this.mode.kind,
+      explore: this.explore.stats(),
     };
   }
 
@@ -705,9 +816,11 @@ export class WorldRenderer {
     this.controls.dispose();
     this.disposeBurst();
     this.character?.dispose();
+    this.explore.dispose();
     for (const actor of this.actors) actor.dispose();
     this.actors.clear();
     this.environment.dispose();
+    for (const m of this.islandMeshes) m.geometry.dispose();   // off-scene ray-test meshes
     this.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (mesh.geometry) mesh.geometry.dispose();

@@ -1,0 +1,140 @@
+/* Free exploration HUD, following the Figma gameplay components:
+   deep teal/navy surfaces, cream text, muted green primary, gold labels. */
+
+.app--explore .screen {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;      /* the 3D canvas underneath receives drags */
+  overflow: visible;
+}
+
+.explore > * { pointer-events: auto; }
+.explore { --hud: rgba(12, 32, 38, 0.86); --hud-edge: #2c4a52; --cream: #f3ead8; --sage: #cfe3c4; }
+
+.explore-hud-top {
+  position: absolute;
+  top: calc(var(--topbar-height, 56px) + var(--space-4));
+  left: var(--space-4);
+  max-width: min(420px, 70vw);
+  padding: var(--space-3) var(--space-4);
+  background: var(--hud);
+  border: 1px solid var(--hud-edge);
+  border-radius: var(--radius-sm);
+  color: var(--cream);
+  pointer-events: none;
+}
+.explore-hud-top .eyebrow { color: var(--amber); margin: var(--space-2) 0 0; }
+.explore-location { margin: 0; font-size: var(--step--1); color: var(--mist-muted); }
+.explore-objective { margin: var(--space-1) 0 0; font: 400 var(--step-1)/1.3 var(--font-story); color: var(--cream); }
+
+.explore-actions {
+  position: absolute;
+  top: calc(var(--topbar-height, 56px) + var(--space-4));
+  right: var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+}
+.explore .btn-sm { background: var(--hud); color: var(--cream); border: 1px solid var(--hud-edge); }
+.explore kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 0.35em;
+  border: 1px solid #5b7a80;
+  border-radius: 4px;
+  font: 600 0.8em/1.6 var(--font-body);
+  text-align: center;
+  color: var(--cream);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.explore-prompt { position: absolute; left: 50%; bottom: 18%; transform: translateX(-50%); }
+.explore-prompt-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--hud);
+  color: var(--cream);
+  border: 1px solid var(--hud-edge);
+  border-radius: var(--radius-sm);
+  font: 600 var(--step-0) var(--font-body);
+  cursor: pointer;
+}
+.explore-prompt-button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.explore-prompt-far {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--hud);
+  color: var(--mist);
+  border-radius: var(--radius-sm);
+  font-size: var(--step--1);
+}
+
+.explore-message {
+  position: absolute;
+  left: 50%;
+  bottom: 9%;
+  transform: translateX(-50%);
+  margin: 0;
+  max-width: min(560px, 90vw);
+  padding: var(--space-2) var(--space-4);
+  background: var(--hud);
+  color: var(--cream);
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.explore-message.is-visible { opacity: 1; }
+
+.explore-panel {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  width: min(640px, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-4) var(--space-5);
+  background: var(--hud);
+  border: 1px solid var(--hud-edge);
+  border-radius: var(--radius-md, 12px);
+  color: var(--cream);
+}
+.explore-panel p { color: var(--cream); }
+.explore-panel-title { margin: 0 0 var(--space-2); font: 400 var(--step-2)/1.2 var(--font-story); color: var(--cream); }
+.explore-speaker { margin: 0; font-weight: 700; color: var(--amber) !important; }
+.explore-speaker span { font-weight: 400; color: var(--mist-muted); }
+.explore-line { font: 400 var(--step-1)/1.45 var(--font-story); margin: var(--space-2) 0 var(--space-4); }
+.explore-buttons { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.explore .btn-primary { background: var(--sage); color: #12302a; border-color: var(--sage); }
+.explore .btn-ghost { color: var(--cream); border: 1px solid var(--hud-edge); }
+
+.explore-map { top: calc(var(--topbar-height, 56px) + var(--space-6)); bottom: auto; }
+.explore-map-list { list-style: none; margin: 0 0 var(--space-4); padding: 0; display: grid; gap: var(--space-2); }
+.explore-map-list li { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.explore-map-list li > span:first-child { flex: 1; min-width: 10em; }
+
+.explore-controls ul { margin: 0 0 var(--space-4); padding-left: 1.2em; display: grid; gap: var(--space-1); }
+
+.explore-loading {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  padding: var(--space-3) var(--space-4); background: var(--hud); color: var(--cream); border-radius: var(--radius-sm);
+}
+
+.explore-fallback {
+  max-width: 560px;
+  margin: calc(var(--topbar-height, 56px) + var(--space-7)) auto 0;
+  padding: var(--space-5);
+  background: var(--parchment);
+  color: var(--ink);
+  border-radius: var(--radius-md, 12px);
+  pointer-events: auto;
+}
+
+@media (max-width: 640px) {
+  .explore-actions { top: auto; bottom: var(--space-4); right: var(--space-2); flex-direction: column; }
+  .explore-hud-top { max-width: calc(100vw - 2 * var(--space-4)); }
+}
+
+/* Quest screen: the island link sits beside the destination back link */
+.back-link--island { margin-left: var(--space-4); }
+.back-link--island::before { content: '🧭 '; }

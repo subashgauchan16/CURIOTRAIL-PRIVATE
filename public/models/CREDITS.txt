@@ -7,3 +7,15 @@ Changes: merged into chunks, baked to flat per-face colours (the original
 texture atlas is not included), water and seabed removed, simplified,
 quantized and meshopt-compressed. See tools/optimize-island.mjs.
 These two files are licensed CC-BY-4.0, not under the CurioTrail licence.
+
+island-b/VikingIsland_Scene.glb is the CURIOtrail Viking Island built in Blender
+from original scripted geometry (see the Viking_refined island project). The
+Sketchfab model above was consulted as a layout reference only; no geometry or
+textures from it are included in this file.
+
+characters/Pathfinder.glb, Mira.glb and Tove.glb are built in Blender
+(tools/characters/build_character.py) from these Quaternius packs, all
+CC0 1.0 (public domain dedication, https://creativecommons.org/publicdomain/zero/1.0/):
+"Universal Base Characters", "Modular Character Outfits - Fantasy" and
+"Universal Animation Library" (https://quaternius.com). Attribution is not
+required by CC0; it is given here for provenance.

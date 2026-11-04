@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CameraMode, DestinationView, LoadState, Quality, WorldRenderer as Renderer } from '../world/WorldRenderer';
+import type { IslandConfig } from '../engine/types';
+import { interactables, loadExplore } from '../app/explore-content';
+import { NavGrid, fromBlender } from '../world/explore';
 
 export type StageStatus = 'starting' | 'loading' | 'refining' | 'ready' | 'error' | 'fallback';
 
@@ -13,6 +16,7 @@ interface Props {
   onStatus?: (status: StageStatus, detail?: string) => void;
   rendererRef?: React.MutableRefObject<Renderer | null>;
   interactive: boolean; // whether labels are clickable (map screen)
+  island?: IslandConfig; // defaults to the original island
 }
 
 const STATUS_TEXT: Record<DestinationView['status'], string> = {
@@ -30,7 +34,7 @@ const STATUS_ICON: Record<DestinationView['status'], string> = {
   planned: '✦',
 };
 
-export function WorldStage({ enabled, quality, reducedMotion, mode, destinations, onSelect, onStatus, rendererRef, interactive }: Props) {
+export function WorldStage({ enabled, quality, reducedMotion, mode, destinations, onSelect, onStatus, rendererRef, interactive, island }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderer = useRef<Renderer | null>(null);
   const labels = useRef(new Map<string, HTMLElement>());
@@ -66,6 +70,9 @@ export function WorldStage({ enabled, quality, reducedMotion, mode, destinations
           quality,
           reducedMotion,
           modelBase: './models/',
+          islandFiles: island?.files,
+          scale: island?.scale,
+          characterScale: island?.characterScale,
           onSelect: (id) => onSelectRef.current?.(id),
           onLoad: (state) => {
             setLoad(state);
@@ -80,7 +87,20 @@ export function WorldStage({ enabled, quality, reducedMotion, mode, destinations
         for (const [id, el] of labels.current) instance.setLabel(id, el);
         instance.setDestinations(destinationsRef.current);
         instance.setMode(modeRef.current);
-        void instance.loadIsland();
+        const created = instance;
+        void instance.loadIsland().then(() => {
+          // Islands with a walk grid get free exploration and persistent rigged NPCs.
+          if (!island?.nav || cancelled) return undefined;
+          return loadExplore(island.nav).then(({ content, nav }) => {
+            if (cancelled) return undefined;
+            created.explore.setNav(new NavGrid(nav));
+            created.explore.setInteractables(interactables(content, destinationsRef.current));
+            return created.explore.load(content.player.model, content.npcs.map((n) => {
+              const p = fromBlender(n.at[0], n.at[1]);
+              return { id: n.id, model: n.model, x: p.x, z: p.z, rot: n.rot };
+            }));
+          });
+        }).catch((error: unknown) => console.warn('Exploration could not start:', error));
       })
       .catch((error: unknown) => {
         if (cancelled) return;
@@ -131,7 +151,7 @@ export function WorldStage({ enabled, quality, reducedMotion, mode, destinations
           ))}
         </div>
       )}
-      {showFallback && <FallbackMap destinations={destinations} interactive={interactive} onSelect={onSelect} selected={mode.kind === 'map' ? mode.selected ?? null : null} />}
+      {showFallback && <FallbackMap destinations={destinations} interactive={interactive} onSelect={onSelect} selected={mode.kind === 'map' ? mode.selected ?? null : null} span={560 * (island?.scale ?? 1)} />}
       {busy && (
         <div className="stage-loading" role="status">
           <span className="spinner" aria-hidden="true" />
@@ -153,9 +173,9 @@ export function WorldStage({ enabled, quality, reducedMotion, mode, destinations
 }
 
 /** Readable 2D map used when WebGL is unavailable, switched off or failed. */
-function FallbackMap({ destinations, interactive, onSelect, selected }: { destinations: DestinationView[]; interactive: boolean; onSelect?: (id: string) => void; selected: string | null }) {
-  // Island coordinates span roughly x −250…250, z −260…260.
-  const toPct = (v: number) => 50 + (v / 560) * 100;
+function FallbackMap({ destinations, interactive, onSelect, selected, span }: { destinations: DestinationView[]; interactive: boolean; onSelect?: (id: string) => void; selected: string | null; span: number }) {
+  // `span` is the island's width in world units (about 560 on the original island, 140 on island B).
+  const toPct = (v: number) => 50 + (v / span) * 100;
   return (
     <div className="fallback-map">
       <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true" className="fallback-art">

@@ -18,6 +18,7 @@ import { MapScreen } from '../ui/screens/MapScreen';
 import { QuestScreen } from '../ui/screens/QuestScreen';
 import { CompleteScreen } from '../ui/screens/CompleteScreen';
 import { ProgressScreen } from '../ui/screens/ProgressScreen';
+import { ExploreScreen } from '../ui/screens/ExploreScreen';
 
 export const FEEDBACK_URL =
   'https://github.com/denilthaks/CURIO/issues/new?title=CurioTrail%20feedback&body=What%20felt%20confusing%3F%0A%0AWhat%20did%20you%20learn%3F%0A%0AWould%20you%20try%20another%20quest%3F';
@@ -129,6 +130,7 @@ function Game() {
   })), [world, quests, progress]);
 
   const mode: CameraMode = useMemo(() => {
+    if (route.name === 'explore') return { kind: 'explore', view: 'third' };
     if (route.name === 'map') return { kind: 'map', selected: route.id, panel: narrow ? 'bottom' : 'right' };
     if (route.name === 'quest') {
       const dest = destinationForQuest(world, route.id);
@@ -143,7 +145,7 @@ function Game() {
     return { kind: 'overview', panel: route.name === 'home' && !narrow ? 'left' : undefined };
   }, [route, world, quests, pose, narrow]);
 
-  const titles: Record<Route['name'], string> = { home: '', start: 'Choose your identity', map: 'The Unmapped World', quest: '', complete: 'Quest complete', progress: 'Progress & settings' };
+  const titles: Record<Route['name'], string> = { home: '', start: 'Choose your identity', map: 'The Unmapped World', quest: '', complete: 'Quest complete', progress: 'Progress & settings', explore: 'Explore the island' };
   const questTitle = route.name === 'quest' || route.name === 'complete' ? quests.get(route.id)?.title : '';
   useEffect(() => {
     const t = questTitle || titles[route.name];
@@ -158,6 +160,7 @@ function Game() {
     case 'map': screen = <MapScreen selected={route.id} renderer={rendererRef} stageStatus={stageStatus} webgl={enabled} />; break;
     case 'quest': screen = <QuestScreen key={route.id} questId={route.id} onPose={setPose} />; break;
     case 'complete': screen = <CompleteScreen questId={route.id} feedbackUrl={FEEDBACK_URL} />; break;
+    case 'explore': screen = <ExploreScreen renderer={rendererRef} stageStatus={stageStatus} webgl={enabled} />; break;
     case 'progress': screen = <ProgressScreen webgl={webgl} autoQuality={autoQuality} stageStatus={stageStatus} renderer={rendererRef} />; break;
     default: screen = <HomeScreen feedbackUrl={FEEDBACK_URL} />;
   }
@@ -175,6 +178,7 @@ function Game() {
         onSelect={(id) => navigate(`/map/${id}`)}
         onStatus={setStageStatus}
         rendererRef={rendererRef}
+        island={world.island}
       />
       <TopBar route={route} />
       <main id="main" ref={mainRef} className="screen" tabIndex={-1}>
@@ -203,5 +207,9 @@ function guardRoute(route: Route, game: ReturnType<typeof useGame>): string | nu
     }
   }
   if (route.name === 'map' && route.id && !world.destinations.some((d) => d.id === route.id)) return '/map';
+  if (route.name === 'explore') {
+    if (!world.island?.nav) return '/map';
+    if (!progress.player) return '/start';
+  }
   return null;
 }

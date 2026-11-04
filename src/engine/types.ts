@@ -208,9 +208,18 @@ export interface Destination {
   teaser?: string;
 }
 
+/** Which island model the world uses, and how its units relate to the original island. */
+export interface IslandConfig {
+  files: { low: string; high?: string }; // under ./models/
+  scale: number; // 1 = original island (1 unit = 1 block); 0.25 = island B (1 unit = 1 m)
+  characterScale: number; // scale of the procedural quest characters
+  nav?: string; // walk grid under ./data/ (enables free exploration)
+}
+
 export interface World {
   schemaVersion: 1;
   destinations: Destination[];
+  island?: IslandConfig;
 }
 
 // ---- Runs and answers ----

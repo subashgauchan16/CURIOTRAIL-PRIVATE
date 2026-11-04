@@ -12,10 +12,10 @@
       ],
       "unlockedBy": [],
       "position": [
-        -12,
-        172
+        10,
+        -24
       ],
-      "landmark": "The forest hamlet with the round signal tower on the island's south shore."
+      "landmark": "The forest path below the lookout, on the island's northern rise."
     },
     {
       "id": "viking-workshop",
@@ -29,10 +29,10 @@
         "missing-signal"
       ],
       "position": [
-        -68,
-        -22
+        13,
+        7
       ],
-      "landmark": "The timber workshops west of the village square."
+      "landmark": "The timber workshop east of the village green."
     },
     {
       "id": "trading-market",
@@ -46,10 +46,10 @@
         "missing-signal"
       ],
       "position": [
-        5,
-        -75
+        14,
+        30
       ],
-      "landmark": "The harbour market beside the longship docks."
+      "landmark": "The harbour market with three stalls and the ledger desk."
     },
     {
       "id": "great-hall",
@@ -64,10 +64,10 @@
         "market-ledger"
       ],
       "position": [
-        141,
-        14
+        0,
+        -1
       ],
-      "landmark": "The Jarl's longhouse on the eastern hillside."
+      "landmark": "The Jarl's longhouse at the north side of the village."
     },
     {
       "id": "web-frontier",
@@ -77,11 +77,19 @@
       "quests": [],
       "unlockedBy": "planned",
       "position": [
-        -9,
-        -204
+        0,
+        52
       ],
-      "landmark": "The lookout tower at the end of the northern pier.",
+      "landmark": "The arrival dock on the south shore.",
       "teaser": "Build a simple interactive information page."
     }
-  ]
+  ],
+  "island": {
+    "files": {
+      "low": "island-b/VikingIsland_Scene.glb"
+    },
+    "scale": 0.25,
+    "characterScale": 1,
+    "nav": "nav-island-b.json"
+  }
 }
