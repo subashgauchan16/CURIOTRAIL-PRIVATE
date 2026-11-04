@@ -624,7 +624,7 @@ const tests = [];
     expect((await page.locator('.badge-card').innerText()).includes('Star Cartographer'), 'badge');
     const p = await saved(page);
     expect(p.lessons.includes('star-chart/lesson-keys') && p.lessons.includes('the-ledger/lesson-group-by'), `lessons not saved: ${p.lessons}`);
-    expect(p.version === 3, 'save version');
+    expect(p.version === 4, 'save version (v4: learning history)');
   });
 
   await run('P9-7/8', 'Rewards come from the engine and persist; destination states update after refresh', async () => {

@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Prototype guard: no network requests of any kind, no inline or remote scripts. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'none'; frame-src 'none'; form-action 'none'">
+  <title>Pathfinder profile · CurioTrail prototype</title>
+  <link rel="icon" href="../../public/favicon.svg" type="image/svg+xml">
+  <!-- The real CurioTrail design system, used as-is (not copied, not modified). -->
+  <link rel="stylesheet" href="../../src/styles/tokens.css">
+  <link rel="stylesheet" href="../../src/styles/base.css">
+  <link rel="stylesheet" href="../../src/styles/components.css">
+  <!-- Prototype-only additions. -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the profile</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <span class="brand">
+        <img src="../../public/favicon.svg" alt="" width="32" height="32">
+        <span>CurioTrail</span>
+      </span>
+      <span class="proto-flag">Prototype</span>
+      <div class="hud" aria-label="Your progress">
+        <span class="hud-emblem" aria-hidden="true" id="hud-emblem"></span>
+        <span class="hud-text">
+          <span class="hud-name" id="hud-name"></span>
+          <span class="hud-level" id="hud-level"></span>
+        </span>
+      </div>
+      <button type="button" class="btn btn-sm btn-ghost" data-open-privacy><span aria-hidden="true">🛡️</span> Privacy</button>
+    </div>
+  </header>
+
+  <main id="main" class="page" tabindex="-1">
+    <div class="proto-note" role="note">
+      <p><strong>Illustrative prototype data.</strong> This learner, their attempts and scores are invented to show how the profile would work. Nothing on this page is sent anywhere.</p>
+      <details class="proto-controls">
+        <summary>Prototype controls</summary>
+        <div class="proto-controls-body">
+          <label for="scenario">Data scenario</label>
+          <select id="scenario" class="select"></select>
+          <p class="hint">Switch to check the zero-retry and empty states. Today is fixed at <span id="clock-label"></span> so periods are reproducible.</p>
+          <button type="button" class="btn btn-sm btn-ghost" id="open-log">View the event log behind this page</button>
+        </div>
+      </details>
+    </div>
+
+    <!-- 1. Profile header -->
+    <section class="profile-hero card-solid" aria-labelledby="profile-name">
+      <div class="hero-top">
+        <div class="avatar" aria-hidden="true">
+          <svg class="avatar-ring" viewBox="0 0 120 120" focusable="false">
+            <circle cx="60" cy="60" r="54" class="ring-track"/>
+            <circle cx="60" cy="60" r="54" class="ring-value" id="ring-value"/>
+          </svg>
+          <span class="avatar-emblem" id="avatar-emblem"></span>
+        </div>
+        <div class="hero-text">
+          <p class="eyebrow">Your Atlas · Pathfinder profile</p>
+          <h1 id="profile-name"></h1>
+          <p class="hero-level" id="hero-level"></p>
+          <div class="xp-row">
+            <progress id="xp-bar" class="xp-bar"></progress>
+            <span class="hint" id="xp-text"></span>
+          </div>
+          <p class="hint placeholder-note">Level and XP use the game’s existing level thresholds; the XP value itself is a placeholder.</p>
+        </div>
+        <p class="hero-quests" id="hero-quests"></p>
+      </div>
+      <h2 class="sr-only">Quest trail</h2>
+      <ol class="trail" id="trail"></ol>
+    </section>
+
+    <!-- 2. Learning overview -->
+    <section class="overview" aria-labelledby="overview-title">
+      <h2 id="overview-title" class="section-title">Learning overview <span class="section-sub">all time</span></h2>
+      <dl class="overview-grid" id="overview"></dl>
+    </section>
+
+    <!-- 3. Behaviour analytics -->
+    <section class="analytics" aria-labelledby="analytics-title">
+      <div class="section-head">
+        <h2 id="analytics-title" class="section-title">Field notes: how you work through challenges</h2>
+        <p class="hint">Every number here is counted from the same event log. Change the filters and everything updates together.</p>
+      </div>
+
+      <form class="filter-bar" id="filters" aria-label="Filter the field notes">
+        <fieldset class="segmented">
+          <legend>Period</legend>
+          <div class="segmented-options" id="period-options"></div>
+        </fieldset>
+        <div class="filter-field">
+          <label for="quest-filter">Quest</label>
+          <select id="quest-filter" class="select"></select>
+        </div>
+        <button type="button" class="btn btn-sm btn-ghost" id="reset-filters">Reset filters</button>
+        <p class="filter-status" id="filter-status" role="status" aria-live="polite"></p>
+        <p class="filter-memory hint" id="filter-memory"></p>
+      </form>
+
+      <div class="kpi-grid" id="kpis"></div>
+      <details class="definitions">
+        <summary>How these numbers are counted</summary>
+        <dl class="definition-list">
+          <dt>Attempt</dt><dd>Each answer you submit. The first answer to a challenge is the <strong>initial attempt</strong>; every later answer to that challenge is a <strong>retry</strong>. So retries = attempts − initial attempts, and an initial attempt is never a retry.</dd>
+          <dt>Challenges completed</dt><dd>Challenges with a correct answer in the selected period and quest.</dd>
+          <dt>Retry-to-success rate</dt><dd>Challenges with at least one retry that were then completed ÷ challenges with at least one retry.</dd>
+          <dt>Concepts revisited</dt><dd>Different skills you came back to (in a practice round or by re-reading a lesson) on a later day than you first met them.</dd>
+          <dt>Mastery score</dt><dd>Items answered correctly ÷ items in a mastery check. Mastery change = latest − earliest score for each quest with at least two checks in the period, averaged across those quests, in percentage points.</dd>
+          <dt>Recovery</dt><dd>For each incorrect attempt, what happened next on the same challenge within <span data-window></span> days. Recovery rate = incorrect attempts followed by a correct next answer ÷ all incorrect attempts.</dd>
+          <dt>Hints</dt><dd>Each hint you ask for. Hints are not attempts and are never counted as one.</dd>
+        </dl>
+      </details>
+
+      <!-- Chart A -->
+      <article class="chart-card" aria-labelledby="chart-a-title">
+        <header class="chart-head">
+          <div>
+            <h3 id="chart-a-title">Attempts &amp; Retries</h3>
+            <p class="chart-summary" id="chart-a-summary"></p>
+          </div>
+          <ul class="legend" aria-label="Legend">
+            <li><span class="key key-initial" aria-hidden="true"></span>Initial attempt</li>
+            <li><span class="key key-retry" aria-hidden="true"></span>Retry</li>
+            <li><span class="key key-hint" aria-hidden="true"></span>Hints used <span class="hint">(not attempts)</span></li>
+            <li><span class="key-symbol" aria-hidden="true">✓</span>Completed</li>
+            <li><span class="key-symbol" aria-hidden="true"><span class="ico-half" aria-hidden="true"></span></span>Not finished yet</li>
+          </ul>
+        </header>
+        <p class="hint chart-howto">Hover or use the arrow keys to see exact counts. Select a challenge to see its full breakdown.</p>
+        <div class="bar-chart" id="chart-a"></div>
+        <details class="table-view"><summary>Show as a table</summary><div id="chart-a-table"></div></details>
+      </article>
+
+      <section class="detail-panel" id="detail" hidden aria-labelledby="detail-title" tabindex="-1"></section>
+
+      <div class="chart-pair">
+        <!-- Chart B -->
+        <article class="chart-card" aria-labelledby="chart-b-title">
+          <header class="chart-head">
+            <div>
+              <h3 id="chart-b-title">Learning Over Time</h3>
+              <p class="chart-summary" id="chart-b-summary"></p>
+            </div>
+            <ul class="legend" id="chart-b-legend" aria-label="Legend"></ul>
+          </header>
+          <div class="line-chart" id="chart-b"></div>
+          <p class="hint">Illustrative scores. Mastery score = items correct ÷ items in the check. Lines join checks from the same quest only.</p>
+          <details class="table-view"><summary>Show as a table</summary><div id="chart-b-table"></div></details>
+        </article>
+
+        <!-- Chart C -->
+        <article class="chart-card" aria-labelledby="chart-c-title">
+          <header class="chart-head">
+            <div>
+              <h3 id="chart-c-title">After a wrong answer</h3>
+              <p class="chart-summary" id="chart-c-summary"></p>
+            </div>
+          </header>
+          <div id="chart-c"></div>
+          <p class="hint">Getting something wrong is part of working it out. A retry isn’t automatically learning, and asking for a hint isn’t a weakness: these show what happened next, not how able you are.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 4. Learning journey -->
+    <section class="journey" aria-labelledby="journey-title">
+      <h2 id="journey-title" class="section-title">Your trail so far <span class="section-sub" id="journey-sub"></span></h2>
+      <ol class="journey-list" id="journey"></ol>
+      <button type="button" class="btn btn-sm btn-ghost" id="journey-more" hidden></button>
+    </section>
+
+    <!-- 5. Insights -->
+    <section class="insights" aria-labelledby="insights-title">
+      <h2 id="insights-title" class="section-title">What your notes show <span class="section-sub" id="insights-sub"></span></h2>
+      <ul class="insight-list" id="insights"></ul>
+    </section>
+
+    <!-- 6. Privacy and data controls -->
+    <section class="privacy card-solid" aria-labelledby="privacy-title">
+      <p class="eyebrow">Privacy and your data</p>
+      <h2 id="privacy-title">How CurioTrail remembers things</h2>
+      <p>There are two separate layers. <strong>Cookies and storage</strong> keep the game working and remember your choices. <strong>Learning events</strong> record what happens in challenges so this profile can show your progress. One isn’t the other, and each has its own settings.</p>
+      <div class="layers" aria-label="The two layers">
+        <div class="layer">
+          <p class="layer-num">Layer 1</p>
+          <h3>Cookies &amp; storage</h3>
+          <p>Remembers that you’re playing, your display preferences and the privacy choices on this page.</p>
+          <ul class="consent-state" id="consent-state-storage"></ul>
+        </div>
+        <div class="layer">
+          <p class="layer-num">Layer 2</p>
+          <h3>Learning events</h3>
+          <p>Challenge started, answer submitted, hint asked for, mastery check, concept revisited. No advertising cookies are needed for any of this.</p>
+          <ul class="consent-state" id="consent-state-learning"></ul>
+        </div>
+      </div>
+      <p class="hint" id="consent-updated"></p>
+      <div class="cta-row">
+        <button type="button" class="btn btn-primary" data-open-privacy>Manage privacy settings</button>
+        <button type="button" class="btn btn-ghost" id="reset-consent">Reset prototype choices</button>
+      </div>
+      <p class="hint">This is a local demonstration, not a consent-management platform. Before release, the real design must be reviewed against UK GDPR and the Privacy and Electronic Communications Regulations (PECR).</p>
+      <p class="hint" id="privacy-notice-placeholder"><a href="#privacy-notice-placeholder">Privacy notice</a> (placeholder: the real notice will be linked here before release).</p>
+    </section>
+  </main>
+
+  <footer class="site-footer"><p>CurioTrail learner profile — prototype for review. Illustrative data only.</p></footer>
+
+  <!-- Cookie choices (shown until a choice is made) -->
+  <section class="cookie-banner" id="cookie-banner" aria-labelledby="cookie-title" hidden>
+    <div class="cookie-inner">
+      <div class="cookie-text">
+        <h2 id="cookie-title">Your cookie choices</h2>
+        <p>CurioTrail always uses <strong>essential storage</strong> to keep the game working and remember this choice. With your permission it can also use <strong>preferences</strong> (remember display choices like your filters) and <strong>analytics</strong> (understand how the site is used, to fix problems). <strong>Marketing</strong> isn’t needed for learning and stays off unless you turn it on. Nothing optional is on until you choose. <a href="#privacy-notice-placeholder">Privacy notice (placeholder)</a></p>
+      </div>
+      <div class="cookie-actions">
+        <button type="button" class="btn btn-ghost cookie-choice" id="cookie-reject">Reject optional cookies</button>
+        <button type="button" class="btn btn-ghost cookie-choice" id="cookie-accept">Accept optional cookies</button>
+        <button type="button" class="btn btn-ghost cookie-choice" data-open-privacy>Customise settings</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy settings (parchment dialog, reusing .settings-dialog from components.css) -->
+  <dialog class="settings-dialog privacy-dialog" id="privacy-dialog" aria-labelledby="privacy-dialog-title">
+    <form method="dialog" id="privacy-form">
+      <div class="dialog-head">
+        <h2 id="privacy-dialog-title">Privacy settings</h2>
+        <button type="submit" value="close" class="btn btn-sm btn-ghost btn-icon" aria-label="Close without saving">✕</button>
+      </div>
+
+      <h3 class="dialog-section">A. Cookies and storage</h3>
+      <p class="hint">Choose which optional kinds of storage CurioTrail may use. Each one is explained before you choose.</p>
+      <div class="consent-rows">
+        <div class="consent-row">
+          <div>
+            <p class="consent-name">Essential storage <span class="always">Always on</span></p>
+            <p class="consent-desc">Keeps a session going, saves your game progress in this browser and remembers these privacy choices. It can’t be switched off here, because turning it off would stop the game saving and some features would not work. Which items really count as essential will be checked in the privacy review.</p>
+          </div>
+        </div>
+        <label class="consent-row">
+          <div>
+            <p class="consent-name">Preferences</p>
+            <p class="consent-desc">Remembers optional display choices, such as the filters you last used on this page.</p>
+          </div>
+          <input type="checkbox" class="switch" name="preferences">
+        </label>
+        <label class="consent-row">
+          <div>
+            <p class="consent-name">Analytics</p>
+            <p class="consent-desc">Helps us understand how the site is used (for example, which pages load slowly) so we can fix problems. Off unless you allow it. In this prototype nothing is loaded either way.</p>
+          </div>
+          <input type="checkbox" class="switch" name="analytics">
+        </label>
+        <label class="consent-row">
+          <div>
+            <p class="consent-name">Marketing</p>
+            <p class="consent-desc">Advertising or marketing tracking. It isn’t needed for learning, CurioTrail doesn’t use any, and it stays off unless you turn it on. In this prototype the switch only changes the displayed state.</p>
+          </div>
+          <input type="checkbox" class="switch" name="marketing">
+        </label>
+      </div>
+
+      <h3 class="dialog-section">B. Learning events</h3>
+      <div class="learning-box">
+        <p class="consent-name">Your progress record</p>
+        <p class="consent-desc">To show this profile and save your place, CurioTrail records these events while you play:</p>
+        <ul class="event-kinds">
+          <li><span aria-hidden="true">▸</span> Challenge started</li>
+          <li><span aria-hidden="true">✎</span> Answer submitted (right or not yet)</li>
+          <li><span aria-hidden="true">💡</span> Hint requested</li>
+          <li><span aria-hidden="true">↻</span> Retry completed</li>
+          <li><span aria-hidden="true">✓</span> Challenge completed</li>
+          <li><span aria-hidden="true">◎</span> Mastery check passed (and its score)</li>
+          <li><span aria-hidden="true">↺</span> Earlier concept revisited</li>
+        </ul>
+        <p class="consent-desc">Each event has a time, the quest and the challenge. It does <strong>not</strong> include your real name, email address, location, device fingerprint or what you type outside the challenge.</p>
+      </div>
+      <label class="consent-row consent-row--learning">
+        <div>
+          <p class="consent-name">Help improve my learning experience</p>
+          <p class="consent-desc">Also let CurioTrail use these events, without your name, to find challenges and hints that need improving. Optional and off unless you turn it on. The right legal basis for this will be confirmed in a privacy review before release.</p>
+        </div>
+        <input type="checkbox" class="switch" name="learningImprovement">
+      </label>
+      <p class="consent-desc note-box"><strong>Turning this off</strong> stops new events being used to improve CurioTrail. It doesn’t delete events already recorded; see “Your data” below.</p>
+
+      <h3 class="dialog-section">C. Your data</h3>
+      <ul class="data-rights">
+        <li><strong>See it:</strong> <button type="button" class="link-button" id="dialog-open-log">view the learning events behind your profile</button>.</li>
+        <li><strong>Delete it:</strong> today the game saves progress only in this browser, and “Reset all progress” on <em>Progress &amp; settings</em> erases it. Clearing your browsing data also removes it.</li>
+        <li><strong>Accounts:</strong> CurioTrail has no accounts yet. If they are added, requests to access or delete account data will be explained here.</li>
+      </ul>
+      <p class="hint"><a href="#privacy-notice-placeholder" id="dialog-notice-link">Privacy notice</a> (placeholder link).</p>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="dialog-reject">Reject all optional</button>
+        <button type="button" class="btn btn-ghost" id="dialog-accept">Accept all optional</button>
+        <button type="button" class="btn btn-primary" id="dialog-save">Save my choices</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Event log viewer (traceability) -->
+  <dialog class="settings-dialog log-dialog" id="log-dialog" aria-labelledby="log-title">
+    <div class="dialog-head">
+      <h2 id="log-title">Event log <span class="hint">(illustrative)</span></h2>
+      <button type="button" class="btn btn-sm btn-ghost btn-icon" id="log-close" aria-label="Close">✕</button>
+    </div>
+    <p class="hint">Every figure on the profile is computed from these records by <code>metrics.js</code>.</p>
+    <div class="log-scroll" tabindex="0" role="region" aria-label="Event log table" id="log-table"></div>
+  </dialog>
+
+  <div class="chart-tip" id="tooltip" role="tooltip" hidden></div>
+
+  <script src="./data.js"></script>
+  <script src="./metrics.js"></script>
+  <script src="./consent.js"></script>
+  <script src="./charts.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -86,7 +86,7 @@ describe('save migration v2 → v3 (lesson steps shift indices)', () => {
     const v2Run = { questId: q.id, sceneIndex: 5, inspected: ['notice', 'ai-draft', 'message'], results: { 'find-source': { attempts: 1, solved: true, revealed: false }, 'spot-conflict': { attempts: 2, solved: true, revealed: false }, 'verify-time': { attempts: 3, solved: true, revealed: true } }, completed: false };
     const v2 = { version: 2, player: { name: 'Asha', emblem: 'owl' }, quests: { 'missing-signal': { run: v2Run, runXp: 25, lastRun: null, lastXp: 0, bestXp: 0, bestStars: 0, completed: false, completions: 0 } }, achievements: [], settings: { motion: 'system', textSize: 'normal', graphics: 'auto' } };
     const loaded = store.createProgressStore(memoryStorage({ [store.STORAGE_KEY]: JSON.stringify(v2) })).load();
-    expect(loaded.version).toBe(3);
+    expect(loaded.version).toBe(store.SCHEMA_VERSION);
     expect(loaded.player).toEqual({ name: 'Asha', emblem: 'owl' });
     expect(store.totalXp(loaded)).toBe(25);
     const run = engine.restoreRun(q, loaded.quests['missing-signal'].run);
