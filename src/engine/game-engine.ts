@@ -78,6 +78,11 @@ export function resultFor(run: Run, sceneId: string): ChallengeResult {
   return run.results[sceneId] || { attempts: 0, solved: false, revealed: false };
 }
 
+/** Solved on the first checked answer, without the answer being shown. */
+export function isFirstTry(_scene: Scene, result: ChallengeResult): boolean {
+  return result.solved && !result.revealed && result.attempts === 1;
+}
+
 function isSceneDone(run: Run, scene: Scene): boolean {
   if (scene.type === 'evidence') return scene.evidence.every((id) => run.inspected.includes(id));
   if (isChallenge(scene)) return resultFor(run, scene.id).solved;
