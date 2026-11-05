@@ -36,6 +36,8 @@ export class ExploreRuntime {
   yaw = Math.PI;             // camera looks north at the start (towards the village from the dock)
   pitch = 0.18;
   inputEnabled = true;
+  /** True while a cinematic owns the camera: no movement, no follow camera, no NPC turn-to-face. Set by CinematicPlayer. */
+  suspended = false;
   onTarget?: (t: Targeting) => void;
   private active = false;
   private nav: NavGrid | null = null;
@@ -161,6 +163,11 @@ export class ExploreRuntime {
     return this.nav?.nearestWalkable(x, z, 3)?.y ?? 0;
   }
 
+  /** Walk-grid height at (x, z) for placing props; `fallback` when the cell is not on the grid. */
+  groundAt(x: number, z: number, fallback: number) {
+    return this.nav?.nearestWalkable(x, z, 3)?.y ?? fallback;
+  }
+
   private onKey(e: KeyboardEvent, down: boolean) {
     if (e.key === 'Shift') this.run = down;
     const axis = KEYS[e.code];
@@ -174,11 +181,12 @@ export class ExploreRuntime {
   }
 
   input(): MoveInput {
-    if (!this.inputEnabled) return { forward: 0, right: 0, run: false };
+    if (!this.inputEnabled || this.suspended) return { forward: 0, right: 0, run: false };
     return { forward: this.keys.up - this.keys.down, right: this.keys.right - this.keys.left, run: this.run };
   }
 
   update(delta: number, reducedMotion: boolean) {
+    if (this.suspended) return;           // a cinematic is placing actors and driving the camera
     // NPCs turn to face a nearby player (only while exploring, never while borrowed for a quest)
     for (const npc of this.npcs.values()) {
       if (npc.borrowed || !this.active || !this.state) continue;
