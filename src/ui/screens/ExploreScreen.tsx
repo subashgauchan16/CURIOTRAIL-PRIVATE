@@ -251,7 +251,7 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
     ? destinationStatus(world.destinations.find((d) => d.id === target.target!.id)!, quests, progress) : null;
 
   return (
-    <section className="explore" aria-labelledby="explore-title">
+    <section className={`explore${cinematic ? ' is-cinematic' : ''}`} aria-labelledby="explore-title">
       <header className="explore-hud-top">
         <p className="explore-location">{zone || 'The Viking Island'}</p>
         <p className="eyebrow">Objective</p>

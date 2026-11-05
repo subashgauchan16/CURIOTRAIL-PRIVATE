@@ -127,6 +127,7 @@ export class WorldRenderer {
   private hemi: THREE.HemisphereLight;
   private sun: THREE.DirectionalLight;
   private borrowedNpc: string | null = null;
+  private markersHidden = false;
   /** Distance-streamed tiles (realistic island only); null for the single-GLB islands A and B. */
   private streamed: StreamedIsland | null = null;
   private streamFocus = new THREE.Vector3();
@@ -225,6 +226,7 @@ export class WorldRenderer {
       hemi: this.hemi,
       sun: this.sun,
       reducedMotion: () => Boolean(this.options.reducedMotion),
+      setMarkersVisible: (visible) => { this.markersHidden = !visible; for (const m of this.markers.values()) m.group.visible = visible; },
     });
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -841,7 +843,7 @@ export class WorldRenderer {
     for (const marker of this.markers.values()) {
       if (!marker.label) continue;
       this.projected.copy(marker.ground).setY(marker.ground.y + 26 * this.s).project(this.camera);
-      const visible = this.projected.z < 1 && Math.abs(this.projected.x) < 1.1 && Math.abs(this.projected.y) < 1.1;
+      const visible = !this.markersHidden && this.projected.z < 1 && Math.abs(this.projected.x) < 1.1 && Math.abs(this.projected.y) < 1.1;
       marker.label.style.visibility = visible ? 'visible' : 'hidden';
       if (visible) {
         placed.push({

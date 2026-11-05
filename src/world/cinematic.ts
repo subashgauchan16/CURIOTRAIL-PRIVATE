@@ -36,6 +36,8 @@ export interface CinematicHost {
   hemi: THREE.HemisphereLight;
   sun: THREE.DirectionalLight;
   reducedMotion: () => boolean;
+  /** Hide or show the destination markers and their HTML labels while a sequence plays. */
+  setMarkersVisible?: (visible: boolean) => void;
 }
 
 export interface CinematicCallbacks { onSubtitle?: (text: string | null) => void; onShot?: (n: number) => void; onEnd?: (skipped: boolean) => void }
@@ -70,6 +72,7 @@ export class CinematicPlayer {
       sky: [PALETTE.skyTop.clone(), PALETTE.skyHorizon.clone()],
       view: explore.view,
     };
+    this.host.setMarkersVisible?.(false);
     explore.suspended = true;      // no movement, no follow camera; NPC turn-to-face is off while suspended
     explore.inputEnabled = false;
     scene.add(this.fx);
@@ -212,6 +215,7 @@ export class CinematicPlayer {
       PALETTE.fog.copy(s.fog[0]); PALETTE.skyTop.copy(s.sky[0]); PALETTE.skyHorizon.copy(s.sky[1]);
       explore.setView(s.view);
     }
+    this.host.setMarkersVisible?.(true);
     explore.release();
     explore.place(seq.end.spawn[0], seq.end.spawn[1], seq.end.heading ?? Math.PI);
     explore.yaw = seq.end.heading ?? Math.PI;
