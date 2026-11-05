@@ -104,6 +104,27 @@ if (fs.existsSync(path.join(dir, 'instances.json'))) {
   const inst = JSON.parse(fs.readFileSync(path.join(dir, 'instances.json'), 'utf8'));
   facts.instances = { trees: inst.trees.length, ships: inst.ships.length, rocks: inst.rocks.length };
   if (!inst.trees.length || !inst.ships.length) err('instances.json has no trees or ships');
+  // Route overrides (tools/island-pipeline/route-overrides.json) must be visible in the outputs: no tree may stand
+  // where one was removed, and every forced cell must be blocked in the walk grid that sits beside the models.
+  const ovPath = new URL('./route-overrides.json', import.meta.url);
+  if (fs.existsSync(ovPath)) {
+    const ov = JSON.parse(fs.readFileSync(ovPath, 'utf8'));
+    const r = ov.tree_match_radius_m ?? 1;
+    for (const t of ov.removed_trees ?? []) {   // trees.json is Blender (x, y); instances.json is three.js [x, y, z] with z = -y
+      const near = inst.trees.filter((k) => Math.hypot(k[0] - t.x, k[2] + t.y) <= r);
+      if (near.length) err(`instances.json still has a tree within ${r} m of removed tree (${t.x}, ${t.y}): ${t.reason}`);
+    }
+    const navPath = path.resolve(dir, '..', '..', 'data', 'nav-island-realistic.json');
+    if (fs.existsSync(navPath)) {
+      const nav = JSON.parse(fs.readFileSync(navPath, 'utf8'));
+      let forced = 0;
+      for (const g of ov.blocked_cells ?? []) for (const [bx, by] of g.cells) {
+        if (nav.blocked[bx + nav.half]?.[by + nav.half] !== '1') err(`walk grid cell (${bx}, ${by}) should be blocked: ${g.reason}`);
+        forced += 1;
+      }
+      facts.overrides = { removedTrees: (ov.removed_trees ?? []).length, blockedCells: forced };
+    } else warn(`walk grid not found at ${navPath}; override cells not checked`);
+  }
 }
 facts.totalBytes = total;
 if (total > BUDGET.totalBytes) warn(`total ${(total / 1e6).toFixed(1)} MB over ${BUDGET.totalBytes / 1e6} MB`);
