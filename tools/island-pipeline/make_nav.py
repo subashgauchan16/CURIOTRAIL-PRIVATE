@@ -6,7 +6,7 @@
 #   h[i][j]     surface height (boardwalk deck where there is one, else ground) for Blender cell
 #               x in [i-half, i-half+1), y in [j-half, j-half+1); null = sea / deep water
 #   blocked[i]  '1' where a building, ship, tree trunk or rock stands (rasterised from the collider list)
-import argparse, json, math, os
+import argparse, json, math, os, sys
 import numpy as np
 
 ap = argparse.ArgumentParser()
@@ -16,13 +16,22 @@ ap.add_argument('--world', required=True)
 ap.add_argument('--out', required=True)
 ap.add_argument('--step-max', type=float, default=1.05)   # boardwalk stairs in the source are 1 m blocks
 ap.add_argument('--instances', help='also write the tree/ship/rock placements (three.js coords) for the streamed island')
+ap.add_argument('--overrides', default=None, help='route-overrides.json (default: the one beside this script); "none" disables')
 a = ap.parse_args()
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import nav_overrides
 
 SEA = 36.0
 G = np.load(os.path.join(a.source, 'data', 'ground.npy')).astype(np.float64) - SEA
 DK = np.load(os.path.join(a.source, 'data', 'deck_h.npy')).astype(np.float64) - SEA
 F = json.load(open(os.path.join(a.source, 'data', 'features.json')))
 T = json.load(open(os.path.join(a.source, 'data', 'trees.json')))
+# Hand-authored corrections (removed route trees, extra blocked cells) live in the repo and are applied here,
+# before the colliders are rasterised, so every pipeline run reproduces them.
+OV = None if a.overrides == 'none' else nav_overrides.load(a.overrides or nav_overrides.DEFAULT_PATH)
+if OV:
+    T = nav_overrides.filter_trees(T, OV)
 D, W = G.shape
 HALF = int(math.ceil(max(W, D) / 2)) + 1
 N = 2 * HALF
@@ -75,6 +84,8 @@ for c in cols:
             if inside:
                 blocked[i, j] = True
 
+forced = nav_overrides.apply_blocked(blocked, OV, HALF) if OV else 0
+
 h = []
 walk = 0
 for i in range(N):
@@ -102,7 +113,7 @@ nav = dict(n=N, half=HALF, cell=1.0, step_max=a.step_max, h=h,
            blocked=[''.join('1' if b else '0' for b in blocked[i]) for i in range(N)],
            spawn={'x': sp[0], 'y': sp[1], 'z': round(float(deck(sp[0], sp[1]) or ground(sp[0], sp[1])), 2)},
            zones=zones,
-           source='tools/island-pipeline/make_nav.py from the realistic island data (ground, boardwalks, colliders)')
+           source='tools/island-pipeline/make_nav.py from the realistic island data (ground, boardwalks, colliders)' + (f' + route-overrides.json v{OV["version"]}' if OV else ''))
 with open(a.out, 'w') as f:
     json.dump(nav, f, separators=(',', ':'))
 if a.instances:   # Blender (x, y) -> three.js (x, -y); base heights from the same ground the walk grid uses
@@ -113,4 +124,4 @@ if a.instances:   # Blender (x, y) -> three.js (x, -y); base heights from the sa
     )
     with open(a.instances, 'w') as f:
         json.dump(inst, f, separators=(',', ':'))
-print(json.dumps({'n': N, 'half': HALF, 'walkable_cells': walk, 'blocked_cells': int(blocked.sum()), 'colliders': len(cols), 'bytes': os.path.getsize(a.out)}))
+print(json.dumps({'n': N, 'half': HALF, 'walkable_cells': walk, 'blocked_cells': int(blocked.sum()), 'forced_blocked': forced, 'removed_trees': len(OV['removed_trees']) if OV else 0, 'colliders': len(cols), 'bytes': os.path.getsize(a.out)}))
