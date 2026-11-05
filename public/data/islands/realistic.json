@@ -57,7 +57,7 @@
     ],
     "trading-market": [
       2.5,
-      -72.5
+      -68.5
     ],
     "great-hall": [
       141.5,
@@ -71,7 +71,7 @@
   "landmarks": {
     "signal-woods": "The forest hamlet with the round signal tower on the island's south shore.",
     "viking-workshop": "The timber workshops west of the village square.",
-    "trading-market": "The harbour market beside the longship docks.",
+    "trading-market": "The harbour market beside the longship docks, on the ground south of the market platform.",
     "great-hall": "The Jarl's longhouse on the eastern hillside.",
     "web-frontier": "The lookout tower at the end of the northern pier."
   }
