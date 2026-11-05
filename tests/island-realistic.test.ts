@@ -113,8 +113,56 @@ describe('streamed island assets', () => {
 
   it('places trees, ships and rocks', () => {
     const inst = JSON.parse(readFileSync(dir + 'instances.json', 'utf8')) as { trees: unknown[]; ships: unknown[]; rocks: unknown[] };
-    expect(inst.trees.length).toBe(215);
+    expect(inst.trees.length).toBe(213);   // 215 from the pipeline, minus the two route spruces removed in the route pass
     expect(inst.ships.length).toBe(8);
     expect(inst.rocks.length).toBeGreaterThan(0);
   });
 });
+
+describe('realistic island routes on foot', () => {
+  const world = loadWorld();
+  const nav = readJson<NavData>('public/data/nav-island-realistic.json');
+  const g = new NavGrid(nav);
+  /** Cells reachable from (x, z) with the game's rule: step up at most step_max, step down freely. */
+  function reachable(x: number, z: number) {
+    const start = g.nearestWalkable(x, z, 1)!;
+    const key = (cx: number, cz: number) => `${Math.floor(cx)},${Math.floor(cz)}`;
+    const seen = new Set([key(start.x, start.z)]);
+    const queue: [number, number, number][] = [[start.x, start.z, start.y]];
+    while (queue.length) {
+      const [cx, cz, cy] = queue.shift()!;
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = cx + dx, nz = cz + dz;
+        if (seen.has(key(nx, nz))) continue;
+        const h = g.stepTo(cy, nx, nz);
+        if (h === null) continue;
+        seen.add(key(nx, nz));
+        queue.push([nx, nz, h]);
+      }
+    }
+    return (x2: number, z2: number) => { const c = g.nearestWalkable(x2, z2, 1); return Boolean(c && seen.has(key(c.x, c.z))); };
+  }
+  const spawn = fromBlender(nav.spawn.x, nav.spawn.y);
+  const from = reachable(spawn.x, spawn.z);
+
+  it('reaches every playable destination from the spawn without teleporting', () => {
+    for (const d of world.destinations) {
+      if (d.unlockedBy === 'planned') continue;
+      expect(from(d.position[0], d.position[1]), d.id).toBe(true);
+    }
+  });
+
+  it('reaches Mira, Tove and the story objects from the spawn', () => {
+    const p = world.island!.placements!;
+    for (const [id, n] of Object.entries(p.npcs!)) { const t = fromBlender(n.at[0], n.at[1]); expect(from(t.x, t.z), id).toBe(true); }
+    for (const [id, at] of Object.entries(p.objects!)) { const t = fromBlender(at[0], at[1]); expect(from(t.x, t.z), id).toBe(true); }
+  });
+
+  it('keeps the player out from under the stilt house floor on the spawn-to-board leg', () => {
+    for (const [bx, by] of [[-22, 62], [-21, 64], [-15, 65], [-9, 63]]) {
+      const t = fromBlender(bx + 0.5, by + 0.5);
+      expect(g.height(t.x, t.z), `${bx},${by}`).toBeNull();
+    }
+  });
+});
+
