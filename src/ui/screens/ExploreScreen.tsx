@@ -15,6 +15,9 @@ export const PLAYER_KEY = 'curiotrail.explore.player';
 /** One saved spot per walk grid, so a position on one island never lands the player in another island's sea. Island B keeps the original key. */
 export function playerKey(nav?: string) { return !nav || nav === 'nav-island-b.json' ? PLAYER_KEY : `${PLAYER_KEY}:${nav}`; }
 const CONTROLS_KEY = 'curiotrail.explore.controls-seen';
+/** The opening cinematic plays once per browser; this flag lives beside the controls flag, never in the save file. */
+const OPENING_KEY = 'curiotrail.cinematic.opening-seen';
+import type { CinematicSequence } from '../../world/cinematic';
 
 type Panel =
   | { kind: 'dialogue'; npc: ExploreNpc; line: number }
@@ -54,6 +57,7 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
   const [view, setView] = useState<ExploreView>('third');
   const [message, setMessage] = useState('');
   const [zone, setZone] = useState('');
+  const [cinematic, setCinematic] = useState<{ subtitle: string | null } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const messageTimer = useRef(0);
   const failed = !webgl || stageStatus === 'error' || stageStatus === 'fallback';
@@ -107,6 +111,28 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
     const r = renderer.current;
     if (r) r.explore.inputEnabled = panel === null || panel.kind === 'controls';
   }, [panel, renderer, ready]);
+
+  // The opening cinematic: once per browser, only on the streamed island, only when the controls guide is not up.
+  useEffect(() => {
+    if (!ready || panel) return undefined;
+    const r = renderer.current;
+    if (!r || !world.island?.streamed) return undefined;
+    let seen = false;
+    try { seen = Boolean(localStorage.getItem(OPENING_KEY)); } catch { seen = true; }
+    if (seen) return undefined;
+    let cancelled = false;
+    fetch('./data/cinematics/opening.json').then((res) => (res.ok ? res.json() : null)).then((seq: CinematicSequence | null) => {
+      if (cancelled || !seq || !renderer.current) return;
+      store(OPENING_KEY, '1', localStorage);        // written first, so a crash mid-sequence never traps the player in a loop
+      setCinematic({ subtitle: null });
+      renderer.current.playCinematic(seq, {
+        onSubtitle: (text) => { setCinematic((c) => (c ? { subtitle: text } : c)); if (text) announce(text); },
+        onEnd: () => { setCinematic(null); setTarget({ target: null, nearby: null, distance: Infinity }); },
+      });
+    }).catch(() => { /* no sequence file: exploration starts as before */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, panel, world.island?.streamed]);
 
   // Location name: the nearest island zone.
   useEffect(() => {
@@ -197,6 +223,7 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
       const el = e.target as HTMLElement;
       if (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || e.altKey || e.ctrlKey || e.metaKey) return;
       const key = e.key.toLowerCase();
+      if (cinematic) { e.preventDefault(); renderer.current?.skipCinematic(); return; }
       if (key === 'escape' && panel) { e.preventDefault(); closePanel(); return; }
       if (panel && panel.kind !== 'controls') return;
       if (key === 'e' || key === 'f') { e.preventDefault(); interact(); }
@@ -207,7 +234,7 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [panel, interact, toggleView, closePanel, renderer]);
+  }, [panel, cinematic, interact, toggleView, closePanel, renderer]);
 
   if (failed) {
     return (
@@ -241,7 +268,16 @@ export function ExploreScreen({ renderer, stageStatus, webgl }: Props) {
 
       {!ready && <p className="explore-loading" role="status">Getting the Pathfinder ready…</p>}
 
-      {ready && !panel && (target.target || target.nearby) && (
+      {cinematic && (
+        <div className="explore-cinematic" role="region" aria-label="Opening">
+          <div className="explore-cinematic-bar" />
+          <p className="explore-cinematic-subtitle" aria-live="polite">{cinematic.subtitle ?? ''}</p>
+          <button type="button" className="btn btn-sm explore-cinematic-skip" onClick={() => renderer.current?.skipCinematic()}>Skip <kbd>Esc</kbd></button>
+          <div className="explore-cinematic-bar" />
+        </div>
+      )}
+
+      {ready && !panel && !cinematic && (target.target || target.nearby) && (
         <div className="explore-prompt">
           {target.target ? (
             <button type="button" className="explore-prompt-button" onClick={interact}>

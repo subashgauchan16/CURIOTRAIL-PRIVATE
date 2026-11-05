@@ -12,6 +12,7 @@ import { PALETTE, createClouds, createSky, createSparkles, createWater, setWater
 import { createCharacter, type Character, type Pose } from './characters';
 import type { CharacterModel } from './character-model';
 import { ExploreRuntime, type ExploreView } from './explore-runtime';
+import { CinematicPlayer, type CinematicSequence, type CinematicCallbacks } from './cinematic';
 import { loadStreamedIsland, type StreamedIsland } from './streamed-island';
 
 import type { Quality } from './capabilities';
@@ -121,6 +122,10 @@ export class WorldRenderer {
   private readonly charScale: number;
   /** Player, persistent NPCs, input and the follow camera for free exploration. */
   readonly explore: ExploreRuntime;
+  /** Real-time cinematics played inside the explore world (opening, quest transitions). */
+  readonly cinematic: CinematicPlayer;
+  private hemi: THREE.HemisphereLight;
+  private sun: THREE.DirectionalLight;
   private borrowedNpc: string | null = null;
   /** Distance-streamed tiles (realistic island only); null for the single-GLB islands A and B. */
   private streamed: StreamedIsland | null = null;
@@ -142,10 +147,12 @@ export class WorldRenderer {
 
     this.scene.fog = new THREE.Fog(PALETTE.fog, 900 * s, 3200 * s);
     this.scene.add(createSky());
-    this.scene.add(new THREE.HemisphereLight('#eaf6ff', '#4b6b4e', 1.5));
+    this.hemi = new THREE.HemisphereLight('#eaf6ff', '#4b6b4e', 1.5);
+    this.scene.add(this.hemi);
     const sun = new THREE.DirectionalLight('#fff4dc', 2.1);
     sun.position.set(-260, 420, 200);
     this.scene.add(sun);
+    this.sun = sun;
     // Image-based light for PBR characters (leather, cloth, skin). The island's
     // Lambert material ignores scene.environment, so its look is unchanged.
     const pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -209,6 +216,15 @@ export class WorldRenderer {
       addActor: (a) => this.addActor(a),
       removeActor: (a) => this.removeActor(a),
       modelBase: options.modelBase,
+    });
+
+    this.cinematic = new CinematicPlayer({
+      scene: this.scene,
+      camera: this.camera,
+      explore: this.explore,
+      hemi: this.hemi,
+      sun: this.sun,
+      reducedMotion: () => Boolean(this.options.reducedMotion),
     });
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -455,7 +471,7 @@ export class WorldRenderer {
     const same = JSON.stringify(mode) === JSON.stringify(this.mode);
     this.mode = mode;
     if (same) return;
-    if (mode.kind === 'explore') { this.flight = null; this.explore.enter(mode.view); } else this.explore.exit();
+    if (mode.kind === 'explore') { this.flight = null; this.explore.enter(mode.view); } else { this.cinematic.skip(); this.explore.exit(); }
     let wantCharacter = (mode.kind === 'focus' || mode.kind === 'celebrate') && mode.character ? mode.character : null;
     // A quest character who exists as a rigged NPC is walked to the quest spot instead of
     // being drawn with primitives; the others keep the procedural figure for now.
@@ -637,6 +653,14 @@ export class WorldRenderer {
 
   // ---- Rigged characters ----
 
+  /** Plays a cinematic in the explore world; resolves through callbacks. Only valid while exploring. */
+  playCinematic(seq: CinematicSequence, cb: CinematicCallbacks = {}) {
+    if (this.mode.kind !== 'explore' || !this.explore.ready) { cb.onEnd?.(true); return; }
+    this.cinematic.play(seq, cb);
+  }
+
+  skipCinematic() { this.cinematic.skip(); }
+
   /** Adds a loaded character to the scene; it is animated every frame and disposed with the world. */
   addActor(actor: CharacterModel) {
     this.actors.add(actor);
@@ -761,6 +785,7 @@ export class WorldRenderer {
       if (t >= 1) this.flight = null;
     }
     if (this.mode.kind !== 'explore') this.controls.update(delta);
+    this.cinematic.update(delta);
     this.explore.update(delta, still);
     if (this.streamed) {
       const p = this.explore.isActive ? this.explore.state : null;
@@ -873,6 +898,7 @@ export class WorldRenderer {
     this.controls.dispose();
     this.disposeBurst();
     this.character?.dispose();
+    this.cinematic.skip();
     this.explore.dispose();
     this.streamed?.dispose();
     this.streamed = null;
